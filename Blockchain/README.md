@@ -74,7 +74,7 @@ go mod vendor
 # Install chaincode
 peer lifecycle chaincode install sacc.tar.gz
 # Approve the chaincode
-peer lifecycle chaincode approveformyorg  -o orderer.example.com:7050 --channelID vec-channel --name sacc --version 1.0 --init-required --package-id sacc_1:816831e90a1ce0bd3254ea0f461063f6ecd4bad006e3e3bcfdd4bc135291a24c --sequence 1 --tls --cafile "$ORDERER_CA"
+peer lifecycle chaincode approveformyorg  -o orderer.example.com:7050 --channelID vec-channel --name sacc --version 1.0 --init-required --package-id sacc_2:2fdf75be6317ad06c3eab86ea1d6172c4bc7f7ca7cbebed875031ec4e16baf83 --sequence 1 --tls --cafile "$ORDERER_CA"
 
 # Check status
 peer lifecycle chaincode checkcommitreadiness -o orderer.example.com:7050 --channelID vec-channel --name sacc --version 1.0 --init-required --sequence 1 --tls --cafile "$ORDERER_CA"
@@ -90,11 +90,33 @@ peer lifecycle chaincode commit -o orderer.example.com:7050 --channelID vec-chan
 peer chaincode invoke -o orderer.example.com:7050 --isInit -C vec-channel -n sacc --tls --cafile "$ORDERER_CA" -c '{"Args":["tv-1","0.5"]}'
 
 # Set
-peer chaincode invoke -o orderer.example.com:7050 -C vec-channel -n sacc --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/msp/tlscacerts/tlsca.example.com-cert.pem -c '{"Args":["set","tv-1","0.7"]}'
+peer chaincode invoke -o orderer.example.com:7050 -C vec-channel -n sacc --tls --cafile "$ORDERER_CA" -c '{"Args":["set","tv-2","0.3"]}'
+
+# Delete
+peer chaincode invoke -o orderer.example.com:7050 -C vec-channel -n sacc --tls --cafile "$ORDERER_CA" -c '{"Args":["del","tv-1"]}'
 
 # Search
-peer chaincode query -C vec-channel -n sacc -c '{"Args":["query","tv-1"]}'
+peer chaincode query -C vec-channel -n sacc -c '{"Args":["query","tv-2"]}'
 
+# Multiple search
+peer chaincode query -C vec-channel -n sacc -c '{"Args":["mul_get","tv-2","tv-3"]}'
+
+```
+
+### Join a new exist channel
+
+```shell
+peer channel fetch oldest vec-channel.block -c vec-channel --orderer orderer.example.com:7050 --tls --cafile "$ORDERER_CA"
+```
+
+```go
+else if fn == "mul_get" {
+		results, err = mul_get(stub, args)
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+		return results
+	} 
 ```
 
 

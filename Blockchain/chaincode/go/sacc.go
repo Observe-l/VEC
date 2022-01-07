@@ -7,6 +7,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
@@ -45,12 +46,22 @@ func (t *SimpleAsset) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 	fn, args := stub.GetFunctionAndParameters()
 
 	var result string
+	var results bytes.Buffer
 	var err error
 	if fn == "set" {
 		result, err = set(stub, args)
+	} else if fn == "del" {
+		result, err = del(stub, args)
+	} else if fn == "mul_get" {
+		results, err = mul_get(stub, args)
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+		return shim.Success(results.Bytes())
 	} else { // assume 'get' even if fn is nil
 		result, err = get(stub, args)
 	}
+
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -73,6 +84,19 @@ func set(stub shim.ChaincodeStubInterface, args []string) (string, error) {
 	return args[1], nil
 }
 
+// delete a data
+func del(stub shim.ChaincodeStubInterface, args []string) (string, error) {
+	if len(args) != 1 {
+		return "", fmt.Errorf("Incorrect arguments. Expecting a key")
+	}
+
+	err := stub.DelState(args[0])
+	if err != nil {
+		return "", fmt.Errorf("Failed to del asset: %s", args[0])
+	}
+	return args[0], nil
+}
+
 // Get returns the value of the specified asset key
 func get(stub shim.ChaincodeStubInterface, args []string) (string, error) {
 	if len(args) != 1 {
@@ -87,6 +111,24 @@ func get(stub shim.ChaincodeStubInterface, args []string) (string, error) {
 		return "", fmt.Errorf("Asset not found: %s", args[0])
 	}
 	return string(value), nil
+}
+
+// Get returns the value of the specified asset key
+func mul_get(stub shim.ChaincodeStubInterface, args []string) (bytes.Buffer, error) {
+	var assets bytes.Buffer
+	for i := 0; i < len(args); i++ {
+		value, err := stub.GetState(args[i])
+		if err != nil {
+			return assets, fmt.Errorf("Failed to get asset: %s with error: %s", args[i], err)
+		}
+		if value == nil {
+			return assets, fmt.Errorf("Asset not found: %s", args[i])
+		}
+		assets.Write(value)
+		assets.WriteByte('\n')
+	}
+
+	return assets, nil
 }
 
 // main function starts up the chaincode in the container during instantiate
