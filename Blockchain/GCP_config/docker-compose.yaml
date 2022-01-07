@@ -48,8 +48,8 @@ services:
       - 7053:7053
       - 9443:9443
     extra_hosts:
-      - "orderer.example.com:34.92.132.215"
-      - "peer0.org1.example.com:34.92.132.215"
+      - "orderer.example.com:127.0.0.1"
+      - "peer0.org1.example.com:127.0.0.1"
     
 
   peer0.org1.example.com:
@@ -92,8 +92,8 @@ services:
       - 7052:7052
       - 9444:9444
     extra_hosts:
-      - "orderer.example.com:34.92.132.215"
-      - "peer0.org1.example.com:34.92.132.215"
+      - "orderer.example.com:127.0.0.1"
+      - "peer0.org1.example.com:127.0.0.1"
 
 
   cli1:
@@ -125,7 +125,8 @@ services:
         - ../crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto
         - ../channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
     extra_hosts:
-      - "orderer.example.com:34.92.132.215"
-      - "peer0.org1.example.com:34.92.132.215"
+      - "orderer.example.com:127.0.0.1"
+      - "peer0.org1.example.com:127.0.0.1"
+      - "peer0.org1.example.com:127.0.0.1"
 
 
