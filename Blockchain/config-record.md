@@ -96,7 +96,7 @@ peer chaincode invoke -o orderer.gcp.com:7050 -C vec-channel -n sacc --tls --caf
 peer chaincode invoke -o orderer.gcp.com:7050 -C vec-channel -n sacc --tls --cafile "$ORDERER_CA" -c '{"Args":["del","tv-1"]}'
 
 # Search
-peer chaincode query -C vec-channel -n sacc -c '{"Args":["query","tv-2"]}'
+peer chaincode query -C vec-channel -n sacc -c '{"Args":["get","tv-2"]}'
 
 # Multiple search
 peer chaincode query -C vec-channel -n sacc -c '{"Args":["mul_get","tv-1","tv-2","tv-3","tv-4","tv-5","tv-6","tv-7","tv-8"]}'
@@ -109,15 +109,7 @@ peer chaincode query -C vec-channel -n sacc -c '{"Args":["mul_get","tv-1","tv-2"
 peer channel fetch oldest vec-channel.block -c vec-channel --orderer orderer.gcp.com:7050 --tls --cafile "$ORDERER_CA"
 ```
 
-```go
-else if fn == "mul_get" {
-		results, err = mul_get(stub, args)
-		if err != nil {
-			return shim.Error(err.Error())
-		}
-		return results
-	} 
-```
+
 
 
 

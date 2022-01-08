@@ -174,3 +174,110 @@ sudo echo 'username ALL=(ALL:ALL) ALL' >> /etc/sudoers
 Then, reboot your computer.
 
 ## 2. Run Fabric
+
+### 2.1 Start docker container
+
+Download the profile from github repository [VEC](https://github.com/Observe-l/VEC/tree/blockchain), open the config folder`VEC/Blockchain/yourname_config`
+
+Start the docker container
+
+```shell
+docker-compose up -d
+```
+
+**Note: you must run this command in your configure folder!!!**
+
+If start success, you can see a client and a peer node.
+
+![docker-compose](/home/lwh/Documents/VEC/Blockchain/picture/docker-compose.png)
+
+Enter the container
+
+```shell
+docker exec -it cli1 bash
+```
+
+### 2.2 Join the channel
+
+I have created a vec-channle, we need to access this channle.
+
+```shell
+# Get vec-channel gensis block
+peer channel fetch oldest vec-channel.block -c vec-channel --orderer orderer.gcp.com:7050 --tls --cafile "$ORDERER_CA"
+
+# Join the channel
+peer channel join -b vec-channel.block
+```
+
+There should be a success message in the terminal
+
+### 2.3 Install the chaincode
+
+After you join the channle, all the ledger block will sync to your computer. You need to install a chaincode to query the message
+
+```shell
+# Packet
+peer lifecycle chaincode package sacc.tar.gz --path /opt/gopath/src/github.com/hyperledger/fabric-cluster/chaincode/go --label sacc_1
+
+# Install chaincode
+peer lifecycle chaincode install sacc.tar.gz
+```
+
+### 2.4 Use chaincode to manipulate the Block chain database
+
+I defined five function in the chaincode: `Init`, `set`, `del`, `get`, `mul_get`, you can use these function to init database, store data, query data and delete data. I have init our database, so you don't need to init it again .Here are some example
+
+```shell
+# Set
+peer chaincode invoke -o orderer.gcp.com:7050 -C vec-channel -n sacc --tls --cafile "$ORDERER_CA" -c '{"Args":["set","tv-2","0.3"]}'
+
+# Search
+peer chaincode query -C vec-channel -n sacc -c '{"Args":["get","tv-2"]}'
+
+# Multiple search
+peer chaincode query -C vec-channel -n sacc -c '{"Args":["mul_get","tv-1","tv-2","tv-3","tv-4","tv-5","tv-6","tv-7","tv-8"]}'
+
+# Delete
+peer chaincode invoke -o orderer.gcp.com:7050 -C vec-channel -n sacc --tls --cafile "$ORDERER_CA" -c '{"Args":["del","tv-1"]}'
+```
+
+If all steps are successful, you can see the data which I upload to the Block chain network
+
+```shell
+#Search "tv-2" data
+bash-5.1# peer chaincode query -C vec-channel -n sacc -c '{"Args":["get","tv-2"]}'
+0.3
+```
+
+"0.3" Is the value corresponding to "tv-2"
+
+### 2.5 Shut down the container
+
+Use `exit` command to exit the container, and you can shutdown the docker container when you don't need them
+
+```shell
+docker-compose down
+```
+
+**Note1: you must run this command in your configure folder!!!**
+
+**Note2: After the first successful run, you can use chaincode command directly, without configuring channel or chaincode again**
+
+## Python API
+
+I'm still working on this, there is a demo program in `VEC/Blockchain/demo.py`, You can try to run this program to see if it works correctly.
+
+It should ouput:
+
+```shell
+$ python3 demo.py
+result: 0.5
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+```
+
