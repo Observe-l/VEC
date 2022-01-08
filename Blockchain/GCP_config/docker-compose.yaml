@@ -7,7 +7,7 @@ version: '3.7'
 
 volumes:
   orderer.gcp.com:
-  peer1.ray.com:
+  peer0.ray.com:
 
 networks:
   test:
@@ -60,8 +60,8 @@ services:
       - test
     
 
-  peer1.ray.com:
-    container_name: peer1.ray.com
+  peer0.ray.com:
+    container_name: peer0.ray.com
     image: hyperledger/fabric-peer:latest
     labels:
       service: hyperledger-fabric
@@ -77,23 +77,23 @@ services:
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
       # Peer specific variables
-      - CORE_PEER_ID=peer1.ray.com
-      - CORE_PEER_ADDRESS=peer1.ray.com:7051
+      - CORE_PEER_ID=peer0.ray.com
+      - CORE_PEER_ADDRESS=peer0.ray.com:7051
       - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
-      - CORE_PEER_CHAINCODEADDRESS=peer1.ray.com:7052
+      - CORE_PEER_CHAINCODEADDRESS=peer0.ray.com:7052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.ray.com:7051
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.ray.com:7051
-      - CORE_PEER_LOCALMSPID=Org1MSP
-      - CORE_OPERATIONS_LISTENADDRESS=peer1.ray.com:9444
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.ray.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.ray.com:7051
+      - CORE_PEER_LOCALMSPID=RayMSP
+      - CORE_OPERATIONS_LISTENADDRESS=peer0.ray.com:9444
       - CORE_METRICS_PROVIDER=prometheus
-      - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG={"peername":"peer0org1"}
+      - CHAINCODE_AS_A_SERVICE_BUILDER_CONFIG={"peername":"peer0ray"}
       - CORE_CHAINCODE_EXECUTETIMEOUT=300s
     volumes:
         - /var/run/docker.sock:/host/var/run/docker.sock
-        - ../crypto-config/peerOrganizations/ray.com/peers/peer1.ray.com/msp:/etc/hyperledger/fabric/msp
-        - ../crypto-config/peerOrganizations/ray.com/peers/peer1.ray.com/tls:/etc/hyperledger/fabric/tls
-        - peer1.ray.com:/var/hyperledger/production
+        - ../crypto-config/peerOrganizations/ray.com/peers/peer0.ray.com/msp:/etc/hyperledger/fabric/msp
+        - ../crypto-config/peerOrganizations/ray.com/peers/peer0.ray.com/tls:/etc/hyperledger/fabric/tls
+        - peer0.ray.com:/var/hyperledger/production
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: peer node start
     ports:
@@ -118,12 +118,12 @@ services:
       - ORDERER_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/gcp.com/msp/tlscacerts/tlsca.gcp.com-cert.pem
       #- FABRIC_LOGGING_SPEC=DEBUG
       - CORE_PEER_ID=cli1
-      - CORE_PEER_ADDRESS=peer1.ray.com:7051
-      - CORE_PEER_LOCALMSPID=Org1MSP
+      - CORE_PEER_ADDRESS=peer0.ray.com:7051
+      - CORE_PEER_LOCALMSPID=RayMSP
       - CORE_PEER_TLS_ENABLED=true
-      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/ray.com/peers/peer1.ray.com/tls/server.crt
-      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/ray.com/peers/peer1.ray.com/tls/server.key
-      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/ray.com/peers/peer1.ray.com/tls/ca.crt
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/ray.com/peers/peer0.ray.com/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/ray.com/peers/peer0.ray.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/ray.com/peers/peer0.ray.com/tls/ca.crt
       - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/ray.com/users/Admin@ray.com/msp
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: /bin/bash

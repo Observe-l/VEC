@@ -1,123 +1,176 @@
-## Tools and client
+# Block chain database
 
-[Hyperledger Fabric](https://hyperledger-fabric.readthedocs.io/en/latest/whatis.html)
+This Block chain network is based on [Hyperledger Fabric](https://hyperledger-fabric.readthedocs.io/en/latest/whatis.html), the consequence node is on our GCP . The network is run in **docker container**, please install docker first. 
 
-### Create CA, MSP and some doc
+I have created TLC and MSP certificates for you. The profile is in on our github repository [VEC](https://github.com/Observe-l/VEC/tree/blockchain), you need download this file before connect to the network
 
-```shell
-cryptogen generate --config=cryptogen.yaml
-```
+Besides, I have upload some data on this network. You can check them when you connect to the network.
 
-### Create and join new channel
+## 1. Install Fabric
 
-First, generate genesis block file and channel file at local directory
+This part refer to [Getting Start - Install](https://hyperledger-fabric.readthedocs.io/en/latest/getting_started.html)
 
-```shell
-# Generate genesis block
-configtxgen -outputBlock ./channel-artifacts/genesis.block -profile vecOrderGenesis -channelID mychannel
-# Generate channel creation file
-configtxgen -outputCreateChannelTx ./channel-artifacts/channel.tx -profile vecChannel -channelID vec-channel
-```
+### 1.1 Prerequisites
 
-​	The, start the docker compose, and create channel
+#### Git
+
+Install the latest version of git
 
 ```shell
-# Create channel in cli
-peer channel create -c vec-channel -f ./channel-artifacts/channel.tx --orderer orderer.example.com:7050 --tls true --cafile "$ORDERER_CA"
-# Join in the channel in other machine
-peer channel join -b vec-channel.block
+sudo apt-get install git
 ```
 
-**Set anchor peers**
+#### cURL
+
+install the latest version of cURL
 
 ```shell
-# fetch the channel configuration:
-peer channel fetch config channel-artifacts/config_block.pb -o orderer.example.com:7050 -c vec-channel --tls --cafile "$ORDERER_CA"
-
-# In config folder, Decode the block from protobuf into a JSON object
-cd channel-artifacts/
-
-configtxlator proto_decode --input config_block.pb --type common.Block --output config_block.json
-jq '.data.data[0].payload.data.config' config_block.json > config.json
-
-# Add the Org1 anchor peer to the channel configuration.
-cp config.json config_copy.json
-
-jq '.channel_group.groups.Application.groups.Org1MSP.values += {"AnchorPeers":{"mod_policy": "Admins","value":{"anchor_peers": [{"host": "peer0.org1.example.com","port": 7051}]},"version": "0"}}' config_copy.json > modified_config.json
-
-# Convert configure file back into protobuf format and compare
-configtxlator proto_encode --input config.json --type common.Config --output config.pb
-configtxlator proto_encode --input modified_config.json --type common.Config --output modified_config.pb
-configtxlator compute_update --channel_id vec-channel --original config.pb --updated modified_config.pb --output config_update.pb
-
-# Wrap the configuration update in a transaction envelope
-configtxlator proto_decode --input config_update.pb --type common.ConfigUpdate --output config_update.json
-echo '{"payload":{"header":{"channel_header":{"channel_id":"vec-channel", "type":2}},"data":{"config_update":'$(cat config_update.json)'}}}' | jq . > config_update_in_envelope.json
-configtxlator proto_encode --input config_update_in_envelope.json --type common.Envelope --output config_update_in_envelope.pb
-
-# Ues "peer channel update" to add the anchor peer
-cd ..
-
-peer channel update -f channel-artifacts/config_update_in_envelope.pb -c vec-channel -o orderer.example.com:7050 --tls --cafile "$ORDERER_CA"
+sudo apt-get install curl
 ```
 
+#### Docker
 
-
-### Chain code lifestyle (on channel)
+Set up the respository
 
 ```shell
-# Packet
-peer lifecycle chaincode package sacc.tar.gz --path /opt/gopath/src/github.com/hyperledger/fabric-cluster/chaincode/go --label sacc_1
-# Install go mod and vendor
-go mod init
-go mod vendor
-# Install chaincode
-peer lifecycle chaincode install sacc.tar.gz
-# Approve the chaincode
-peer lifecycle chaincode approveformyorg  -o orderer.example.com:7050 --channelID vec-channel --name sacc --version 1.0 --init-required --package-id sacc_2:2fdf75be6317ad06c3eab86ea1d6172c4bc7f7ca7cbebed875031ec4e16baf83 --sequence 1 --tls --cafile "$ORDERER_CA"
-
-# Check status
-peer lifecycle chaincode checkcommitreadiness -o orderer.example.com:7050 --channelID vec-channel --name sacc --version 1.0 --init-required --sequence 1 --tls --cafile "$ORDERER_CA"
-
-# Commit chaincode
-peer lifecycle chaincode commit -o orderer.example.com:7050 --channelID vec-channel --name sacc --version 1.0 --sequence 1 --init-required --tls --cafile "$ORDERER_CA"
+sudo apt-get update && sudo apt-get upgrade
+sudo apt-get install \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
 ```
 
-### Use chain code
+Add Docker’s official GPG key:
 
 ```shell
-# Init
-peer chaincode invoke -o orderer.example.com:7050 --isInit -C vec-channel -n sacc --tls --cafile "$ORDERER_CA" -c '{"Args":["tv-1","0.5"]}'
-
-# Set
-peer chaincode invoke -o orderer.example.com:7050 -C vec-channel -n sacc --tls --cafile "$ORDERER_CA" -c '{"Args":["set","tv-2","0.3"]}'
-
-# Delete
-peer chaincode invoke -o orderer.example.com:7050 -C vec-channel -n sacc --tls --cafile "$ORDERER_CA" -c '{"Args":["del","tv-1"]}'
-
-# Search
-peer chaincode query -C vec-channel -n sacc -c '{"Args":["query","tv-2"]}'
-
-# Multiple search
-peer chaincode query -C vec-channel -n sacc -c '{"Args":["mul_get","tv-2","tv-3"]}'
-
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 ```
 
-### Join a new exist channel
+Use the following command to set up the **stable** repository
 
 ```shell
-peer channel fetch oldest vec-channel.block -c vec-channel --orderer orderer.example.com:7050 --tls --cafile "$ORDERER_CA"
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 ```
 
-```go
-else if fn == "mul_get" {
-		results, err = mul_get(stub, args)
-		if err != nil {
-			return shim.Error(err.Error())
-		}
-		return results
-	} 
+Install Docker Engine
+
+```shell
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io
 ```
 
+Once installed, check your docker version
 
+```shell
+$ docker --version
 
+Docker version 20.10.12, build e91ed57
+```
+
+#### Docker Compose
+
+Install the docker compose
+
+```shell
+sudo apt-get install docker-compose
+```
+
+Check your docker-compose version
+
+```shell
+$ docker-compose --version
+
+docker-compose version 1.25.0, build unknown
+```
+
+Add your user to the Docker group. **Remember replace the  username**
+
+```shell
+sudo usermod -a -G docker username
+```
+
+#### Go
+
+Install the latest version of [Go](https://go.dev/doc/install), because we need to write Go chaincode
+
+```shell
+wget https://go.dev/dl/go1.17.6.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.17.6.linux-amd64.tar.gz
+```
+
+Add /usr/local/go/bin to the `PATH` environment variable, and excuse them
+
+```shell
+echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
+source ~/.profile
+```
+
+Check the go version
+
+```shell
+$ go version
+
+go version go1.17.5 linux/amd64
+```
+
+#### jq
+
+```shell
+sudo apt-get install jq
+```
+
+### 1.2 Install Fabric
+
+Download latest Fabric samples, docker images, and binaries. Before that, you should activate your root account
+
+```shell
+sudo su
+curl -sSL https://bit.ly/2ysbOFE | bash -s
+```
+
+Once success, check the docker image. You can see the latest image has been downloaded
+
+```shell
+$ docker images
+
+busybox                         latest    beae173ccac6   8 days ago     1.24MB
+hyperledger/fabric-tools        2.4       58120bdf5a41   5 weeks ago    458MB
+hyperledger/fabric-tools        2.4.0     58120bdf5a41   5 weeks ago    458MB
+hyperledger/fabric-tools        latest    58120bdf5a41   5 weeks ago    458MB
+hyperledger/fabric-peer         2.4       4000f61a7d44   5 weeks ago    54.8MB
+hyperledger/fabric-peer         2.4.0     4000f61a7d44   5 weeks ago    54.8MB
+hyperledger/fabric-peer         latest    4000f61a7d44   5 weeks ago    54.8MB
+hyperledger/fabric-orderer      2.4       1fec842b8f3e   5 weeks ago    37.2MB
+hyperledger/fabric-orderer      2.4.0     1fec842b8f3e   5 weeks ago    37.2MB
+hyperledger/fabric-orderer      latest    1fec842b8f3e   5 weeks ago    37.2MB
+hyperledger/fabric-ccenv        2.4       2f4d3b992cf1   5 weeks ago    504MB
+hyperledger/fabric-ccenv        2.4.0     2f4d3b992cf1   5 weeks ago    504MB
+hyperledger/fabric-ccenv        latest    2f4d3b992cf1   5 weeks ago    504MB
+hyperledger/fabric-baseos       2.4       2d7964efb917   5 weeks ago    6.94MB
+hyperledger/fabric-baseos       2.4.0     2d7964efb917   5 weeks ago    6.94MB
+hyperledger/fabric-baseos       latest    2d7964efb917   5 weeks ago    6.94MB
+hyperledger/fabric-ca           1.5       4ea287b75c63   4 months ago   69.8MB
+hyperledger/fabric-ca           1.5.2     4ea287b75c63   4 months ago   69.8MB
+hyperledger/fabric-ca           latest    4ea287b75c63   4 months ago   69.8MB
+```
+
+Then, move the binaries to your bin folder
+
+```shell
+sudo cp fabric-samples/bin/* /usr/local/bin/
+```
+
+### 1.3 Sudo authority
+
+Because fabric is run in docker, we need sudo authority before running the network **Remember replace the  username**
+
+```shell
+sudo echo 'username ALL=(ALL:ALL) ALL' >> /etc/sudoers
+```
+
+Then, reboot your computer.
+
+## 2. Run Fabric
