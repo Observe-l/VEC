@@ -11,6 +11,6 @@ t = tune.run(
         'framework':'tfe'
     },
     stop={
-        'episodes_total':200
+        'episodes_total':50
     }
 )

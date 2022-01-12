@@ -1,8 +1,8 @@
 import gym
 import gym.spaces
 import numpy as np
-from model.A2ModelSQL import A2EnvSQL
-
+# from model.A2ModelSQL import A2EnvSQL
+from model.A2ModelExtreme import A2EnvExtreme
 
 class A2Env(gym.Env):
     def __init__(self,env_config):
@@ -23,7 +23,7 @@ class A2Env(gym.Env):
         reset the state of the environment
         @return: state
         '''
-        self.base_station = A2EnvSQL()
+        self.base_station = A2EnvExtreme()
         self.observation = np.concatenate([self.base_station.Gb,self.base_station.reliability,self.base_station.Ntr])
         self.done = False
         self.step_num = 0
@@ -35,8 +35,14 @@ class A2Env(gym.Env):
         @param action: take action selected by agent(range from[0,num of base station],Sbk)
         @return: tuple of (observation, reward, done, info)
         '''
+        #print the base station chosen
+        print("The base station chosen is:",action)
+        result=str(action)
+        with open("home/jaimin/PycharmProjects/VECSQL/result/result.txt", 'a') as file:
+            file.write(result)
+            file.write('\n')
+            file.close()
         #update the state of chosen base station
-        # self.base_station.update_reliability(action[0])
         self.base_station.update_reliability(action)
         self.base_station.get_Ntr()
         self.base_station.get_Gb()
@@ -56,10 +62,6 @@ class A2Env(gym.Env):
     def render(self,mode='human'):
         pass
 
-
-if __name__ == '__main__':
-    env = VECEnv()
-    env.reset()
 
 
 

@@ -1,8 +1,13 @@
 from util.BSSQLUtil import *
 import numpy as np
 from util.BaseStationTransfer import *
+import numpy as np
 
-class A2EnvSQL:
+"""
+In order to verify whether the of the agent is right or not, we set two base station where one is most possble
+and another is most impossible. Both the data of these two base station is constant. 
+"""
+class A2EnvExtreme():
     def __init__(self):
         #reset basestation
         resetDB()
@@ -128,7 +133,7 @@ class A2EnvSQL:
         return
 
     def get_verify_time(self):
-        return np.random.uniform(10,21)
+        return np.array([21,10])
 
     # def get_reward(self,Ib,Sbk):
     def get_reward(self,Ib):
@@ -143,7 +148,7 @@ class A2EnvSQL:
 
 if __name__ == '__main__':
     #vailable computing resource
-    env = A2EnvSQL()
+    env = A2EnvExtreme()
     print(env.Gb)
     print(env.Ntr)
     print(env.reliability)
