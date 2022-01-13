@@ -17,24 +17,24 @@ def udp_send(msg,ip,port):
     sk.sendto(msg,(ip,port))
 
 if __name__ == "__main__":
-    ray.init(address='auto', _redis_password='5241590000000000')
+    # ray.init(address='auto', _redis_password='5241590000000000')
     while 1:
         a = input("Select task:\n[1]easy [2]media [3]heavy\n")
         start_time = time.time()
         if a == '1':
-            file = "task_200K.csv"
+            file = "Taskfile/task_200K.csv"
             break
         elif a == '2':
-            file = "task_2M.csv"
+            file = "Taskfile/task_2M.csv"
             break
         elif a == '3':
-            file = "task_4M.csv"
+            file = "Taskfile/task_4M.csv"
             break
         else:
-            print("Input wrong")
+            print("Input wrong\n")
 
 
-    msg = struct.pack('!20si20s',b'send',8000,file.encode())
+    msg = struct.pack('!20si30s',b'send',8000,file.encode())
     udp_send(msg,"192.168.31.196",4563)
     udp_server()
     end_time = time.time()

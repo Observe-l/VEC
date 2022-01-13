@@ -46,7 +46,7 @@ def udp_server():
     sk.bind(("",4563))
     while 1:
         rec, cli_addr = sk.recvfrom(1024)
-        msg = struct.unpack('!20si20s',rec)
+        msg = struct.unpack('!20si30s',rec)
         q.put(msg)
         # sk.close()
 
@@ -55,7 +55,7 @@ def udp_send(msg,ip,port):
     sk.sendto(msg,(ip,port))
 
 if __name__ == "__main__":
-    ray.init(address='auto', _redis_password='5241590000000000')
+    # ray.init(address='auto', _redis_password='5241590000000000')
     udp_get = threading.Thread(target=udp_server)
     udp_get.setDaemon(True)
     udp_get.start()
@@ -76,16 +76,16 @@ if __name__ == "__main__":
     # result = str(ray.get(task))
     result = str(loc_cal(df))
     end_time = time.time()
-    with open("./result.txt",'w') as f:
+    with open("./result/result.txt",'w') as f:
         f.write(result)
         f.close()
     
-    f = open("./result.txt",'rb')
-    test_response = requests.post("http://%s:%s/result.txt"%(ip,port),f)
+    f = open("./result/result.txt",'rb')
+    test_response = requests.post("http://%s:%s/result/result.txt"%(ip,port),f)
     
     print("Total time: ",end_time-start_time)
 
-    complete = struct.pack('!20si20s',b'complete',4563,file.encode())
+    complete = struct.pack('!20si30s',b'complete',4563,file.encode())
     udp_send(complete,ip,4563)
     udp_send(complete,"192.168.31.196",4563)
     

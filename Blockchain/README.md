@@ -189,7 +189,7 @@ docker-compose up -d
 
 If start success, you can see a client and a peer node.
 
-![docker-compose](/home/lwh/Documents/VEC/Blockchain/picture/docker-compose.png)
+![docker-compose](./picture/docker-compose.png)
 
 Enter the container
 
@@ -213,14 +213,21 @@ There should be a success message in the terminal
 
 ### 2.3 Install the chaincode
 
-After you join the channle, all the ledger block will sync to your computer. You need to install a chaincode to query the message
+After you join the channle, all the ledger block will sync to your computer. You need to install a chaincode to query the message. There are two chaincode, one for SAC, another for algorithm 2
 
 ```shell
+# SAC chaincode
 # Packet
-peer lifecycle chaincode package sacc.tar.gz --path /opt/gopath/src/github.com/hyperledger/fabric-cluster/chaincode/go --label sacc_1
+peer lifecycle chaincode package sacc.tar.gz --path /opt/gopath/src/github.com/hyperledger/fabric-cluster/chaincode/go/sacc --label sacc_1
 
 # Install chaincode
 peer lifecycle chaincode install sacc.tar.gz
+
+# Algorithm 2 chaincode
+# Packet
+peer lifecycle chaincode package a2c.tar.gz --path /opt/gopath/src/github.com/hyperledger/fabric-cluster/chaincode/go/a2c --label a2c_2
+# Install chaincode
+peer lifecycle chaincode install a2c.tar.gz
 ```
 
 ### 2.4 Use chaincode to manipulate the Block chain database
@@ -228,6 +235,7 @@ peer lifecycle chaincode install sacc.tar.gz
 I defined five function in the chaincode: `Init`, `set`, `del`, `get`, `mul_get`, you can use these function to init database, store data, query data and delete data. I have init our database, so you don't need to init it again .Here are some example
 
 ```shell
+# SAC data
 # Set
 peer chaincode invoke -o orderer.gcp.com:7050 -C vec-channel -n sacc --tls --cafile "$ORDERER_CA" -c '{"Args":["set","tv-2","0.3"]}'
 
@@ -250,6 +258,21 @@ bash-5.1# peer chaincode query -C vec-channel -n sacc -c '{"Args":["get","tv-2"]
 ```
 
 "0.3" Is the value corresponding to "tv-2"
+
+```shell
+# Algorithm 2 data
+# Set
+peer chaincode invoke -o orderer.gcp.com:7050 -C vec-channel -n a2c --tls --cafile "$ORDERER_CA" -c '{"Args":["set","bs-2","10","20","0","0","0","0"]}'
+
+# Search
+peer chaincode query -C vec-channel -n a2c -c '{"Args":["get","bs-2"]}'
+
+# Multiple search
+peer chaincode query -C vec-channel -n a2c -c '{"Args":["mul_get","bs-1","bs-2"]}'
+
+# Delete
+peer chaincode invoke -o orderer.gcp.com:7050 -C vec-channel -n a2c --tls --cafile "$ORDERER_CA" -c '{"Args":["del","bs-1"]}'
+```
 
 ### 2.5 Shut down the container
 
