@@ -1,7 +1,7 @@
 import docker
 import time
 import json
-
+start_time = time.time()
 client = docker.APIClient(base_url='unix:///var/run/docker.sock')
 
 cmd1 = ''' peer chaincode query -C vec-channel -n sacc -c '{"Args":["query","tv-2"]}' '''
@@ -11,7 +11,7 @@ cmd4 = ''' peer chaincode invoke -o orderer.gcp.com:7050 -C vec-channel -n sacc 
             --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/gcp.com/msp/tlscacerts/tlsca.gcp.com-cert.pem 
             -c '{"Args":["set","tv-2","10"]}' '''
 cmd5 = ''' peer chaincode query -C vec-channel -n a2c -c '{"Args":["mul_get","bs-1","bs-2"]}' '''
-start_time = time.time()
+
 id1 = client.exec_create('cli1',cmd1)
 id2 = client.exec_create('cli1',cmd2)
 id3 = client.exec_create('cli1',cmd3)

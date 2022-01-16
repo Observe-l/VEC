@@ -52,7 +52,7 @@ def selectAll():
     print("load all data successfully")
     return data
 
-def update(bs):
+def update(bs: BaseStation):
     conn = pymysql.connect(host='34.92.132.215', user='ray', passwd='Ray@123456', database='basestation')
     # conn = pymysql.connect(host='localhost',user='root',password=',db='VEC.db')
     c = conn.cursor()
