@@ -45,14 +45,10 @@ class VECEnv(gym.Env):
         @param action: take action selected by agent(range from[0,num of base station],Sbk)
         @return: tuple of (observation, reward, done, info)
         '''
-<<<<<<< HEAD
-        # assert action in [0, 1, 2], action
-=======
         #update the state of chosen base station
         # self.base_station.update_reliability(action[0])
         print("waitting request")
         msg,addr = udp_request.udp_server()
->>>>>>> SAC Code
         self.base_station.get_utility(action)
         self.base_station.get_Utility_task(action)
         self.base_station.get_normalized_utility(action)
@@ -60,14 +56,9 @@ class VECEnv(gym.Env):
         self.base_station.update_compute_efficiency(action)
         self.base_station.update_reliability(action)
         # print("last state:",self.observation[0]-action)
-<<<<<<< HEAD
-        print("action", action)
-        # print(self.base_station.reliability)
-=======
         # print("action", action)
         udp_request.udp_send("offloading",action,msg[2].decode(),addr)
         print("complete this task")
->>>>>>> SAC Code
         # print("state:",self.observation[0])
         self.step_num+=1
         # reward=self.base_station.get_reward(action[0],action[1])
