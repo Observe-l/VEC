@@ -2,11 +2,13 @@ import gym
 import gym.spaces
 import numpy as np
 from Para_def import SACEnv
+import mysql.connector
 
 
 class VECEnv(gym.Env):
     def __init__(self,env_config):
         self.s = 3
+        self.a = 0
 
         self.action_space = gym.spaces.Discrete(self.s)
         observation_array_min = np.append([0.0 for i in range(self.s)], [0.0 for i in range(self.s)])
@@ -42,8 +44,7 @@ class VECEnv(gym.Env):
         @param action: take action selected by agent(range from[0,num of base station],Sbk)
         @return: tuple of (observation, reward, done, info)
         '''
-        #update the state of chosen base station
-        # self.base_station.update_reliability(action[0])
+        # assert action in [0, 1, 2], action
         self.base_station.get_utility(action)
         self.base_station.get_Utility_task(action)
         self.base_station.get_normalized_utility(action)
@@ -52,13 +53,32 @@ class VECEnv(gym.Env):
         self.base_station.update_reliability(action)
         # print("last state:",self.observation[0]-action)
         print("action", action)
+        # print(self.base_station.reliability)
         # print("state:",self.observation[0])
         self.step_num+=1
         # reward=self.base_station.get_reward(action[0],action[1])
         reward=self.base_station.get_reward(action)
         if self.step_num>100:
-            self.done=True
+            self.done = True
         self.observation = np.concatenate([self.base_station.Fs,self.base_station.snr,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.t_delay])
+        if self.done == True:
+            mydb = mysql.connector.connect(
+                host="localhost",
+                user="zequn",
+                password="666888",
+                database="SAC"
+            )
+            mycursor = mydb.cursor()
+            while self.a < self.s:
+                sql1 = "UPDATE dataupload SET completion_ratio = %s WHERE vehicleID = %s"
+                input_data1 = (self.base_station.completion_ratio[self.a], self.a)
+                mycursor.execute(sql1, input_data1)
+                sql2 = "UPDATE dataupload SET reliability = %s WHERE vehicleID = %s"
+                input_data2 = (self.base_station.reliability[self.a], self.a)
+                mycursor.execute(sql2, input_data2)
+                mydb.commit()
+                self.a += 1
+
         return self.observation,reward,self.done,{}
 
 
