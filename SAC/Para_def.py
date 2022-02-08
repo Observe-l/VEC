@@ -3,17 +3,17 @@ import pandas as pd
 import pymysql
 import random
 
-# mydb = pymysql.connect(
-#   host="localhost",
-#   user="zequn",
-#   password="666888",
-#   database="SAC"
-# )
-# delaycmd = "select offloading_delay from sacenv"
-# compcmd = "select computation_size from sacenv"
-#
-# tdelay = pd.read_sql(delaycmd, mydb)
-# csize = pd.read_sql(compcmd, mydb)
+mydb = pymysql.connect(
+  host="localhost",
+  user="zequn",
+  password="666888",
+  database="SAC"
+)
+delaycmd = "select offloading_delay from sacenv"
+compcmd = "select computation_size from sacenv"
+
+tdelay = pd.read_sql(delaycmd, mydb)
+csize = pd.read_sql(compcmd, mydb)
 
 class SACEnv:
     def __init__(self,s):
@@ -66,11 +66,11 @@ class SACEnv:
         # a1 = np.float32(a)
         # b1 = np.float32(b)
         # c1 = np.float32(c)
-        return np.array([0.5, 50, 90])
+        # return np.array([a1, b1, c1])
         # return np.random.uniform(0.2, 4, (self.s,))
-        # csi = np.array(csize)
-        # csi1 = np.float32(csi)
-        # return csi1.reshape((3,))
+        csi = np.array(csize)
+        csi1 = np.float32(csi)
+        return csi1.reshape((3,))
 
 
     def get_D_size(self):
@@ -83,11 +83,11 @@ class SACEnv:
         # a1 = np.float32(a)
         # b1 = np.float32(b)
         # c1 = np.float32(c)
-        return np.array([0.2, 5, 12])
+        # return np.array([a1, b1, c1])
         # return np.random.uniform(1, 13, (self.s,))
-        # tde = np.array(tdelay)
-        # tde1 = np.float32(tde)
-        # return tde1.reshape((3,))
+        tde = np.array(tdelay)
+        tde1 = np.float32(tde)
+        return tde1.reshape((3,))
 
     def get_utility(self,Vs):
         self.t_delay = self.get_t_delay()
