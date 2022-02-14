@@ -108,7 +108,7 @@ def resetDB():
     return bs
 
 def createDB():
-    conn = pymysql.connect(host='localhost', user='database', passwd='123456', database='basestation')
+    conn = pymysql.connect(host='localhost', user='VEC', passwd='666888', database='DDQN')
     c=conn.cursor()
     command = "CREATE TABLE BASESTATION( id VARCHAR(20) PRIMARY KEY NOT NULL,\
              global_computing_resource REAL,\
@@ -124,7 +124,7 @@ def createDB():
     return
 
 def initializeDB():
-    conn = pymysql.connect(host='localhost', user='database', passwd='123456', database='basestation')
+    conn = pymysql.connect(host='localhost', user='VEC', passwd='666888', database='DDQN')
     c = conn.cursor()
     # initialize the base station dataframe
     data = {'id': [1, 2],
@@ -157,5 +157,4 @@ def initializeDB():
 
 
 if __name__ == '__main__':
-    # createDB()
     initializeDB()

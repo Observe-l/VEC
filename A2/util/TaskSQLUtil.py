@@ -5,7 +5,7 @@ import pandas as pd
 
 def insert(task:Task):
     # conn = pymysql.connect(host='34.92.132.215', user='ray', passwd='Ray@123456', database='basestation')
-    conn = pymysql.connect(host='localhost', user='database', passwd='123456', database='basestation')
+    conn = pymysql.connect(host='localhost', user='VEC', passwd='666888', database='DDQN')
     cursor = conn.cursor()
     sql = "INSERT INTO TASK (id,offload_vehicle_id,\
     service_vehicle_id,allocation_basestation_id,done_status) VALUES ("+str(task.id)+" ,"+str(task.offload_vehicle_id)+" ,"\
@@ -23,7 +23,7 @@ def insert(task:Task):
 
 def countAllByBS(basestation_id):
     # conn = pymysql.connect(host='localhost',port=3307,user='root',password='root',db='VEC.db')
-    conn = pymysql.connect(host='localhost', user='database', passwd='123456', database='basestation')
+    conn = pymysql.connect(host='localhost', user='VEC', passwd='666888', database='DDQN')
     c = conn.cursor()
     command = "SELECT * FROM TASK where allocation_basestation_id="+str(basestation_id)+";"
     data = pd.read_sql(command, conn)
@@ -33,7 +33,7 @@ def countAllByBS(basestation_id):
     return count
 
 def countDoneByBS(basestation_id):
-    conn = pymysql.connect(host='localhost', user='database', passwd='123456', database='basestation')
+    conn = pymysql.connect(host='localhost', user='VEC', passwd='666888', database='DDQN')
     c = conn.cursor()
     command = "SELECT * FROM TASK where allocation_basestation_id=" + str(basestation_id) + " and done_status=1;"
     data = pd.read_sql(command, conn)
@@ -45,7 +45,7 @@ def countDoneByBS(basestation_id):
 
 def deleteAll():
     # conn = pymysql.connect(host='34.92.132.215', user='ray', passwd='Ray@123456', database='basestation')
-    conn = pymysql.connect(host='localhost', user='database', passwd='123456', database='basestation')
+    conn = pymysql.connect(host='localhost', user='VEC', passwd='666888', database='DDQN')
     c = conn.cursor()
     command = "DELETE from TASK"
     c.execute(command)
@@ -56,7 +56,7 @@ def deleteAll():
 
 
 def createDB():
-    conn = pymysql.connect(host='localhost', user='database', passwd='123456', database='basestation')
+    conn = pymysql.connect(host='localhost', user='VEC', passwd='666888', database='DDQN')
     c=conn.cursor()
     command = "CREATE TABLE TASK( id VARCHAR(20) PRIMARY KEY NOT NULL,\
             offload_vehicle_id REAL,\
@@ -80,7 +80,7 @@ def getNowTimestamp():
 
 
 if __name__ == '__main__':
-    # createDB()
+    createDB()
 
     #load 2 tasks
     # deleteAll()
@@ -104,5 +104,5 @@ if __name__ == '__main__':
     # # insert(task1)
     # insert(task2)
 
-    temp=countAllByBS(2)
-    print(temp)
+    # temp=countAllByBS(2)
+    # print(temp)
