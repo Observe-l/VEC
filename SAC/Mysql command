@@ -1,0 +1,27 @@
+CREATE TABLE sacenv (
+    vehicleID varchar(255),
+    computing_resource varchar(255),
+    SNR varchar(255),
+    link_duration varchar(255),
+    relability varchar(255),
+    data_size varchar(255),
+    computation_size varchar(255),
+    offloading_delay varchar(255),
+    max_delay varchar(255)
+);
+
+CREATE TABLE dataupload (
+    vehicleID varchar(255),
+    completion_ratio varchar(255),
+    reliability varchar(255)
+);
+
+
+
+INSERT INTO sacenv
+VALUES (2, 50, 10, 10, 20, 10, 50, 12, 10); 
+
+
+UPDATE sacenv
+SET computation_size = 0.5
+WHERE vehicleID = 0; 

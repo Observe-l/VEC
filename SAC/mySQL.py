@@ -4,7 +4,7 @@ import numpy as np
 
 mydb = pymysql.connect(
   host="localhost",
-  user="zequn",
+  user="VEC",
   password="666888",
   database="SAC"
 )
