@@ -57,7 +57,7 @@ class VECEnv(gym.Env):
         self.base_station.update_reliability(action)
         # print("last state:",self.observation[0]-action)
         # print("action", action)
-        udp_request.udp_send("offloading",action,msg[2].decode(),addr)
+        udp_request.udp_send("offloading",action,4.0.decode(),addr)
         print("complete this task")
         # print("state:",self.observation[0])
         self.step_num+=1
