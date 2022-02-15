@@ -12,8 +12,8 @@ mydb = pymysql.connect(
 delaycmd = "select offloading_delay from sacenv"
 compcmd = "select computation_size from sacenv"
 
-tdelay = pd.read_sql(delaycmd, mydb)
-csize = pd.read_sql(compcmd, mydb)
+# tdelay = pd.read_sql(delaycmd, mydb)
+# csize = pd.read_sql(compcmd, mydb)
 
 class SACEnv:
     def __init__(self,s):
@@ -68,6 +68,7 @@ class SACEnv:
         # c1 = np.float32(c)
         # return np.array([a1, b1, c1])
         # return np.random.uniform(0.2, 4, (self.s,))
+        csize = pd.read_sql(compcmd, mydb)
         csi = np.array(csize)
         csi1 = np.float32(csi)
         return csi1.reshape((3,))
@@ -85,6 +86,7 @@ class SACEnv:
         # c1 = np.float32(c)
         # return np.array([a1, b1, c1])
         # return np.random.uniform(1, 13, (self.s,))
+        tdelay = pd.read_sql(delaycmd, mydb)
         tde = np.array(tdelay)
         tde1 = np.float32(tde)
         return tde1.reshape((3,))
