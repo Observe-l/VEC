@@ -1,8 +1,10 @@
 import gym
 import gym.spaces
 import numpy as np
+import time
 # from model.A2ModelSQL import A2EnvSQL
 from model.A2ModelExtreme import A2EnvExtreme
+from util.TaskSQLUtil import countAllByBS
 
 class A2Env(gym.Env):
     def __init__(self,env_config):
@@ -17,6 +19,8 @@ class A2Env(gym.Env):
         observation_array_max = np.append(observation_array_max,[10.0])
         self.observation_space = gym.spaces.box.Box(observation_array_min,observation_array_max,dtype=np.float32)
         self.reset()
+        # TODO:add reset the task table
+        self.task_num=0
 
     def reset(self):
         '''
@@ -42,6 +46,13 @@ class A2Env(gym.Env):
             file.write(result)
             file.write('\n')
             file.close()
+        #wait for the sql to add data
+        while True:
+            time.wait(500)
+            temp_task_num=countAllByBS
+            if temp_task_num!=self.task_num:
+                self.task_num=temp_task_num
+                break
         #update the state of chosen base station
         self.base_station.update_reliability(action)
         self.base_station.get_Ntr()
