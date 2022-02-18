@@ -1,6 +1,6 @@
 import datetime
 import pymysql
-from util.Task import Task
+from A2.util.Task import Task
 import pandas as pd
 
 def insert(task:Task):
@@ -93,16 +93,16 @@ if __name__ == '__main__':
     # task1.allocation_basestation_id=1
     # task1.service_vehicle_id=2
     #
-    # task2=Task()
-    # task2.id=4
-    # task2.offload_vehicle_id = 2
-    # task2.allocation_begin_time = getNowTimestamp()
-    # task2.allocation_end_time = getNowTimestamp()
-    # task2.done_status = 0
-    # task2.allocation_basestation_id = 2
-    # task2.service_vehicle_id = 1
-    # # insert(task1)
-    # insert(task2)
+    task2=Task()
+    task2.id=4
+    task2.offload_vehicle_id = 2
+    task2.allocation_begin_time = getNowTimestamp()
+    task2.allocation_end_time = getNowTimestamp()
+    task2.done_status = 0
+    task2.allocation_basestation_id = 2
+    task2.service_vehicle_id = 1
+    # insert(task1)
+    insert(task2)
 
     # temp=countAllByBS(2)
     # print(temp)

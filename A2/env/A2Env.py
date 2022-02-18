@@ -3,8 +3,8 @@ import gym.spaces
 import numpy as np
 import time
 # from model.A2ModelSQL import A2EnvSQL
-from model.A2ModelExtreme import A2EnvExtreme
-from util.TaskSQLUtil import countAllByBS
+from A2.model.A2ModelExtreme import A2EnvExtreme
+from A2.util.TaskSQLUtil import countAllByBS
 
 class A2Env(gym.Env):
     def __init__(self,env_config):
@@ -48,11 +48,13 @@ class A2Env(gym.Env):
             file.close()
         #wait for the sql to add data
         while True:
-            time.wait(500)
-            temp_task_num=countAllByBS
-            if temp_task_num!=self.task_num:
-                self.task_num=temp_task_num
+            time.sleep(2)
+            temp_task_num = countAllByBS(1)
+            temp_task_num += countAllByBS(2)
+            if temp_task_num != self.task_num:
+                self.task_num = temp_task_num
                 break
+        print("Go on!")
         #update the state of chosen base station
         self.base_station.update_reliability(action)
         self.base_station.get_Ntr()

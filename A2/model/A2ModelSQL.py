@@ -1,11 +1,12 @@
-from util.BSSQLUtil import *
+from A2.util.BSSQLUtil import *
 import numpy as np
-from util.BaseStationTransfer import *
+from A2.util.BaseStationTransfer import *
 
 class A2EnvSQL:
     def __init__(self):
         #reset basestation
         resetDB()
+
         #get the basestation model
         baseStationsDF = selectAll()
         self.baseStations = BSDF2BS(baseStationsDF)
