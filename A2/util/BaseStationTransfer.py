@@ -1,4 +1,4 @@
-from util.BaseStation import BaseStation
+from A2.util.BaseStation import BaseStation
 
 
 def BSDF2BS(baseStationDF):

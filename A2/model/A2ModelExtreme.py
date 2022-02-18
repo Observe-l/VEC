@@ -1,6 +1,6 @@
-from util.BSSQLUtil import *
+from A2.util.BSSQLUtil import *
 import numpy as np
-from util.BaseStationTransfer import *
+from A2.util.BaseStationTransfer import *
 import numpy as np
 
 """

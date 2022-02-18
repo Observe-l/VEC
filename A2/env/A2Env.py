@@ -5,6 +5,8 @@ import time
 # from model.A2ModelSQL import A2EnvSQL
 from A2.model.A2ModelExtreme import A2EnvExtreme
 from A2.util.TaskSQLUtil import countAllByBS
+from A2.util.TaskSQLUtil import countDoneByBS
+from A2.util.BSSQLUtil import *
 
 class A2Env(gym.Env):
     def __init__(self,env_config):
@@ -20,7 +22,8 @@ class A2Env(gym.Env):
         self.observation_space = gym.spaces.box.Box(observation_array_min,observation_array_max,dtype=np.float32)
         self.reset()
         # TODO:add reset the task table
-        self.task_num=0
+        self.task_num_1=0
+        self.task_num_2=0
 
     def reset(self):
         '''
@@ -49,10 +52,25 @@ class A2Env(gym.Env):
         #wait for the sql to add data
         while True:
             time.sleep(2)
-            temp_task_num = countAllByBS(1)
-            temp_task_num += countAllByBS(2)
-            if temp_task_num != self.task_num:
-                self.task_num = temp_task_num
+            temp_task_num_1 = countAllByBS(1)
+            temp_task_num_2= countAllByBS(2)
+            if temp_task_num_1 != self.task_num_1:
+                self.task_num_1 = temp_task_num_1
+                #update the number of total received task and compute ratio of basestation1
+                done = countDoneByBS(1)
+                bs1 = selectById(1)
+                bs1.total_received_task=self.task_num_1
+                bs1.completion_ratio = done/bs1.total_received_task
+                update(bs1)
+                break
+            elif temp_task_num_2 != self.task_num_2:
+                self.task_num_2 = temp_task_num_2
+                #update the number of total received task and compute ratio of basestation2
+                done = countDoneByBS(2)
+                bs2 = selectById(2)
+                bs2.total_received_task = self.task_num_2
+                bs2.completion_ratio = done / bs2.total_received_task
+                update(bs2)
                 break
         print("Go on!")
         #update the state of chosen base station
