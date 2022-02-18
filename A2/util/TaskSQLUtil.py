@@ -1,5 +1,6 @@
 import datetime
 import pymysql
+from TaskTransfer import TaskDF2Task
 from A2.util.Task import Task
 import pandas as pd
 
@@ -76,6 +77,49 @@ def getNowTimestamp():
     now=datetime.datetime.now()
     now=now.strftime("%Y-%m-%d %H:%M:%S")
     return now
+
+    # def selectById(id):
+    #     # conn = pymysql.connect(host='localhost',port=3307,user='root',password='root',db='VEC.db')
+    #     conn = pymysql.connect(host='localhost', user='VEC', passwd='666888', database='DDQN')
+    #     c = conn.cursor()
+    #     command = "SELECT * from BASESTATION WHERE id=" + str(id)
+    #     cursor = c.execute(command)
+    #     bs = BaseStation()
+    #     for row in cursor:
+    #         bs.id = row[0]
+    #         bs.global_computing_resource = row[1]
+    #         bs.reversed_computing_resource = row[2]
+    #         bs.computing_efficiency = row[3]
+    #         bs.completion_ratio = row[4]
+    #         bs.total_received_task = row[5]
+    #         bs.reliability = row[6]
+    #     conn.close()
+    #     # print("select data successfully")
+    #     return bs
+
+def selectLatestRecByBSID(basestation_id,num):
+    conn = pymysql.connect(host='localhost', user='VEC', passwd='666888', database='DDQN')
+    c = conn.cursor()
+    command = "SELECT * FROM TASK where allocation_basestation_id=" + str(basestation_id) +"ORDER BY 'id' DESC OFFSET 0 ROWS FETCH FIRST"+str(num)+" ROWS ONLY"
+    data = pd.read_sql(command, conn)
+    conn.close()
+    tasks = TaskDF2Task(data)
+    return tasks
+
+    #     bs = BaseStation()
+    #     for row in cursor:
+    #         bs.id = row[0]
+    #         bs.global_computing_resource = row[1]
+    #         bs.reversed_computing_resource = row[2]
+    #         bs.computing_efficiency = row[3]
+    #         bs.completion_ratio = row[4]
+    #         bs.total_received_task = row[5]
+    #         bs.reliability = row[6]
+    #     conn.close()
+    #     # print("select data successfully")
+    #     return bs
+
+
 
 
 

@@ -22,8 +22,7 @@ class A2Env(gym.Env):
         self.observation_space = gym.spaces.box.Box(observation_array_min,observation_array_max,dtype=np.float32)
         self.reset()
         # TODO:add reset the task table
-        self.task_num_1=0
-        self.task_num_2=0
+        self.task_num=[0,0,0]
 
     def reset(self):
         '''
@@ -45,47 +44,56 @@ class A2Env(gym.Env):
         #print the base station chosen
         print("The base station chosen is:",action)
         result=str(action)
+
         with open("home/jaimin/PycharmProjects/VECSQL/result/result.txt", 'a') as file:
             file.write(result)
             file.write('\n')
             file.close()
+
+        self.observation = np.concatenate([self.base_station.Gb, self.base_station.reliability, self.base_station.Ntr])
+        # reward=self.base_station.get_reward(action[0],action[1])
+        reward=self.base_station.get_reward(action)
+        self.step_num += 1
+        if self.step_num > 100:
+            self.done = True
+        self.observation = np.concatenate([self.base_station.Gb, self.base_station.reliability, self.base_station.Ntr])
+
+
         #wait for the sql to add data
         while True:
             time.sleep(2)
-            temp_task_num_1 = countAllByBS(1)
-            temp_task_num_2= countAllByBS(2)
-            if temp_task_num_1 != self.task_num_1:
-                self.task_num_1 = temp_task_num_1
-                #update the number of total received task and compute ratio of basestation1
-                done = countDoneByBS(1)
-                bs1 = selectById(1)
-                bs1.total_received_task=self.task_num_1
-                bs1.completion_ratio = done/bs1.total_received_task
-                update(bs1)
-                break
-            elif temp_task_num_2 != self.task_num_2:
-                self.task_num_2 = temp_task_num_2
-                #update the number of total received task and compute ratio of basestation2
-                done = countDoneByBS(2)
-                bs2 = selectById(2)
-                bs2.total_received_task = self.task_num_2
-                bs2.completion_ratio = done / bs2.total_received_task
-                update(bs2)
-                break
+            temp_task_num = [0,0,0]
+            len = len(self.task_num)
+            #load the number of tasks
+            for i in range(len):
+                temp_task_num[i] = countAllByBS(i+1)
+            all_list = []
+            #save the list of allocation basestation
+            for i in range(len):
+                diff = temp_task_num[i+1] -self.task_num[i+1]
+                if diff!=0:
+                    all_list.append([i+1,diff])
+                    self.task_num[i+1]=temp_task_num[i+1]
+            # update the base station database if there is update
+            if len(all_list)!=0:
+                for (bs_id,num) in all_list:
+                    done = countDoneByBS(bs_id)
+                    bs = selectById(bs_id)
+                    #update total received number
+                    bs.total_received_task = self.task_num[bs_id-1]
+                    #update completion ratio
+                    bs.completion_ratio = done / bs.total_received_task
+                    update(bs)
+                    self.base_station.update_reliability(bs_id,num)
+                    break
         print("Go on!")
         #update the state of chosen base station
-        self.base_station.update_reliability(action)
         self.base_station.get_Ntr()
         self.base_station.get_Gb()
         # print("last state:",self.observation[0]-action)
         # print("action",action)
         # print("state:",self.observation[0])
-        self.step_num+=1
-        # reward=self.base_station.get_reward(action[0],action[1])
-        reward=self.base_station.get_reward(action)
-        if self.step_num>100:
-            self.done=True
-        self.observation = np.concatenate([self.base_station.Gb,self.base_station.reliability,self.base_station.Ntr])
+
         return self.observation,reward,self.done,{}
 
 

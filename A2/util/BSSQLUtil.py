@@ -51,6 +51,7 @@ def selectAll():
     conn = pymysql.connect(host='localhost', user='VEC', passwd='666888', database='DDQN')
     c = conn.cursor()
     data = pd.read_sql("SELECT * from BASESTATION", conn)
+    conn.close()
     print("load all data successfully")
     return data
 
