@@ -24,14 +24,9 @@ class A2EnvExtreme:
         self.Gb = self.get_Gb()  # state1 global resource
 
         # state2 reliability
-        self.Tn = 4 #maximun tolerance delay
-        self.t_delay = np.array([0, 0])
-        self.normalized_utility = np.zeros(self.b)
-        self.compute_efficiency = np.array([self.baseStations[i].computing_efficiency for i in range(self.b)])
-        self.completion_ratio = np.array(
-            [self.baseStations[i].completion_ratio for i in range(self.b)])  # get from zequn
+        self.Tn = [4,4,4] #maximun tolerance delay
+         # get from zequn
         self.omega1 = 0.8  # range from[0,1]
-        self.total_received_task = np.zeroes(self.b)
         self.omega2 = 0.8
         # self.reliability = self.get_reliability() #state3 reliability
         self.reliability = np.array([self.baseStations[i].reliability for i in range(self.b)])
@@ -76,38 +71,35 @@ class A2EnvExtreme:
         self.Ntr[0] = np.array([8])
         return
 
-    def get_t_delay(self,Ib):
+    def get_t_delay(self,task):
         '''
         range from[0.1,11]
         @param b: the number of station
         @return: the delay of base station
         '''
-        # use the time stamp to get the delay of every
+        #TODO: use the time stamp to get the delay of every
 
-        return np.random.uniform(0.1, 6)
+        return
 
-    def get_normalized_utilization(self, Ib):
+    def get_normalized_utilization(self,Ib,task):
         '''
         @return: normalization_utilization
         '''
-        self.t_delay[Ib] = self.get_t_delay()
-        difference = self.Tn[Ib] - self.t_delay[Ib]
+        difference = self.Tn[Ib] - task.delay
         if difference < 0:
-            self.normalized_utility[Ib] = 0
+            normalized_utility = 0
         else:
-            self.normalized_utility[Ib] = np.log(1 + difference) / np.log(1 + self.Tn[Ib])
-        return
+            normalized_utility = np.log(1 + difference) / np.log(1 + self.Tn[Ib])
+        return normalized_utility
 
-    def update_compute_efficiency(self, Ib):
+    def update_compute_efficiency(self, Ib,normalized_utilization):
         '''
         update the compute efficaiency according to normalized utility and previous compute efficiency
         @return:
         '''
-        self.compute_efficiency[Ib] = (1 - self.omega1) * self.compute_efficiency[Ib] + self.omega1 * \
-                                      self.normalized_utility[Ib]
-        # update the data in database
-        self.baseStations[Ib].computing_efficiency = self.compute_efficiency[Ib]
-        update(self.baseStations[Ib])
+        self.baseStations[Ib].computing_efficiency = (1 - self.omega1) * self.compute_efficiency[Ib] + self.omega1 * \
+                                      normalized_utilization
+
         return
 
     # def update_total_received(self, Ib):
@@ -118,23 +110,21 @@ class A2EnvExtreme:
     #     update(self.baseStations[Ib])
     #     return
 
-    # def update_completion_ratio(self, Ib):
-    #     one = 1 if self.t_delay[Ib] < self.Tn[Ib] else 0
-    #     self.completion_ratio[Ib] = (self.total_received_task[Ib] * self.completion_ratio[Ib] + one) / (
-    #             self.total_received_task[Ib] + 1)
-    #     self.total_received_task = self.total_received_task + 1
-    #     self.baseStations[Ib].completion_ratio = self.completion_ratio[Ib]
-    #     self.baseStations[Ib].id = "BASESTATION" + str(Ib)
-    #     # print("id:", self.baseStations[Ib].id)
-    #     update(self.baseStations[Ib])
-    #     return
+    def update_completion_ratio(self, Ib,task):
+        one = 1 if task.delay < self.Tn[Ib] else 0
+        total_received_task = countAllByBS()
+        total_done_task =countDoneByBS()
+        self.baseStations[Ib].completion_ratio = (self.baseStations[Ib].total_received_task * self.completion_ratio[Ib] + one) / (
+                self.total_received_task[Ib] + 1)
+        self.baseStations[Ib].total_received_task+=1
+        return
 
     def get_reliability(self, Ib):
-        result = self.omega2 * self.compute_efficiency[Ib] + (1 - self.omega1) * self.completion_ratio[Ib]
-        return result
+        result = self.omega2 * self.baseStations[Ib].compute_efficiency + (1 - self.omega1) * self.baseStations[Ib].compute_efficiency
+        self.baseStations[Ib].reliability = result
+        return
 
     def update_reliability(self, Ib):
-
 
         #TODO:update the reliability as the update task lists
         self.get_normalized_utilization(Ib)
@@ -164,7 +154,20 @@ class A2EnvExtreme:
         if delay > self.maximum_tolerance_dalay:
             self.reward = -5
         else:
-            self.reward = (self.epsilon1 * self.reliability[Ib] + self.epsilon2 * Sbk / 2.0) * (
+            self.reward = (self.epsilon1 * self.baseStations[Ib].reliability + self.epsilon2 * Sbk / 2.0) * (
                     1 + self.maximum_tolerance_dalay - delay)
         self.reward = np.float(self.reward)
         return self.reward
+
+    def updateBSByTasks(self,num):
+        tasks = selectLatest(num)
+        for task in tasks:
+            Ib = task.allocation_basestation_id
+            normalized_utilization = self.get_normalized_utilization(Ib,task)
+            self.update_compute_efficiency(Ib,normalized_utilization)
+            self.update_completion_ratio(Ib,task)
+            self.get_reliability(Ib)
+            update(self.baseStations[Ib])
+
+
+

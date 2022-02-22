@@ -7,3 +7,4 @@ class Task():
         self.allocation_begin_time=None
         self.allocation_end_time=None
         self.done_status=None
+        self.delay = None
