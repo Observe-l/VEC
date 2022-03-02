@@ -57,14 +57,13 @@ class VECEnv(gym.Env):
         self.base_station.update_reliability(action)
         # print("last state:",self.observation[0]-action)
         # print("action", action)
-        udp_request.udp_send("offloading",action,4.0.decode(),addr)
-        print("complete this task")
+        udp_request.udp_send("offloading",action,msg[2],addr[0])
         # print("state:",self.observation[0])
         self.step_num+=1
         # reward=self.base_station.get_reward(action[0],action[1])
         reward=self.base_station.get_reward(action)
-        if self.step_num>100:
-            self.done = True
+        # if self.step_num>100:
+        self.done = True
         self.observation = np.concatenate([self.base_station.Fs,self.base_station.snr,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.t_delay])
         if self.done == True:
             mydb = mysql.connector.connect(

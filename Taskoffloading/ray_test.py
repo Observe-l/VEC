@@ -2,7 +2,6 @@ import time
 import udp_request
 import ray
 import math
-import random
 
 @ray.remote
 def cal(data: ray.data.Dataset[int]) -> int:
@@ -30,28 +29,13 @@ if __name__ == "__main__":
     file[4] = ray.data.read_csv("/home/ubuntu/Documents/Taskfile/task_4Mbits.csv")
     size = [0.2,1,2,3,4]
     
-    a = input("Start\n")
-    n = 0
-    while 1:
-        n = random.choice([0,1,2,3,4])
-        start_time = time.time()
-        # Send a request
-        # msg = struct.pack('!20s20sf',b'request',b'vehicle1',size[n])
-        udp_request.udp_send("request","vehicle1",size[n],"192.168.1.117")
-        msg,addr =  udp_request.udp_server()
-        print("get return")
-        action = msg[1].decode().rstrip('\x00')
-        if action == '0':
-            vid = "vehicle1"
-        elif action == '1':
-            vid = "vehicle2"
-        else:
-            vid = "vehicle3"
-        task = cal.options(num_cpus=1, resources={vid: 1}).remote(file[n])
-        result = ray.get(task)
-        end_time = time.time()
-        total_time = end_time-start_time
-        # msg = struct.pack('!20s20sf',b'complete',vid.encode(),total_time)
-        udp_request.udp_send("complete",vid,total_time,"192.168.1.117")
-        print("#",n," task is completed by: ",vid)
-        print("Total time: ",total_time)
+    a = input("Select Task:[0:200K, 1:1M, 2:2M, 3:3M, 4:4M]\n")
+    start_time = time.time()
+
+    task = cal.options(num_cpus=1, resources={"vehicle2": 1}).remote(file[a])
+    result = ray.get(task)
+    end_time = time.time()
+    total_time = end_time-start_time
+    print("Total time: ",total_time)
+    print("#",a," task is completed by: vehicle2")
+    print("Task size: ",size[a],"Mbits")
