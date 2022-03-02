@@ -1,4 +1,4 @@
-from A2.util.Task import Task
+from Task import Task
 import datetime
 import json
 

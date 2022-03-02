@@ -1,8 +1,7 @@
 import pymysql
-from A2.util.BaseStation import BaseStation
-from A2.util.BaseStationTransfer import *
+from BaseStation import BaseStation
+from BaseStationTransfer import *
 import pandas as pd
-from A2.util.BaseStationTransfer import BSDF2BS
 
 def insert(bs:BaseStation):
     conn = pymysql.connect(host='localhost', user='VEC', passwd='666888', database='DDQN')
@@ -88,13 +87,13 @@ def resetDB():
 
     c = conn.cursor()
     #initialize the base station dataframe
-    data = {'id': [1, 2,3],
-            'global_computing_resource': [20, 29,25],
-            'reversed_computing_resource': [10, 0,5],
-            'computing_efficiency': [0, 0,0],
-            'completion_ratio': [0, 0,0],
-            'total_received_task': [0, 0,0],
-            'reliability': [0, 0,0]
+    data = {'id': [1, 2],
+            'global_computing_resource': [20, 29],
+            'reversed_computing_resource': [10, 0],
+            'computing_efficiency': [0, 0],
+            'completion_ratio': [0, 0],
+            'total_received_task': [0, 0],
+            'reliability': [0, 0]
             }
     df = pd.DataFrame(data)
     bss = BSDF2BS(df)
@@ -134,13 +133,13 @@ def initializeDB():
     # conn = pymysql.connect(host='localhost', user='database', passwd='123456', database='basestation')
     c = conn.cursor()
     # initialize the base station dataframe
-    data = {'id': [1, 2,3],
-            'global_computing_resource': [20, 29,25],
-            'reversed_computing_resource': [10, 0,5],
-            'computing_efficiency': [0, 1,0.5],
-            'completion_ratio': [0, 1,0],
-            'total_received_task': [0, 1,0],
-            'reliability': [0, 1,0.5]
+    data = {'id': [1, 2],
+            'global_computing_resource': [20, 29],
+            'reversed_computing_resource': [10, 0],
+            'computing_efficiency': [0, 1],
+            'completion_ratio': [0, 1],
+            'total_received_task': [0, 1],
+            'reliability': [0, 1]
             }
     df = pd.DataFrame(data)
     bss = BSDF2BS(df)
@@ -164,8 +163,7 @@ def initializeDB():
 
 
 if __name__ == '__main__':
-     bs  = selectById(1)
-     print("hhh")
+     selectAll
 
 
 

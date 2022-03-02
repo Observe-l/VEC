@@ -2,17 +2,19 @@ import gym
 import gym.spaces
 import numpy as np
 import time
-from A2.model.A2ModelSQL import A2EnvExtreme
-# from A2.model.A2ModelExtreme import A2EnvExtreme
-from A2.util.TaskSQLUtil import countAll
-from A2.util.BSSQLUtil import *
+import sys
+sys.path.append("..")
+# from model.A2ModelSQL import A2EnvExtreme
+from model.A2ModelSQL import A2EnvExtreme
+from util.TaskSQLUtil import countAll
+from util.BSSQLUtil import *
 
 class A2Env(gym.Env):
     def __init__(self,env_config):
         # dimension = 2*self.b+1
         # self.action_space = gym.spaces.Tuple([Discrete(self.b),Discrete(40)])
         # self.action_space = gym.spaces.MultiDiscrete([self.b,40])
-        self.b=2 #number of base station
+        self.b=2  #number of base station
         self.action_space = gym.spaces.Discrete(self.b)
         observation_array_min = np.append([0.0 for i in range(self.b)],[0.0 for i in range(self.b)])
         observation_array_min = np.append(observation_array_min,[0.0])

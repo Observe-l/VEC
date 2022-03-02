@@ -1,15 +1,16 @@
-from A2.util.BSSQLUtil import *
+import sys
+sys.path.append('..')
+from util.BaseStation import *
 import numpy as np
-from A2.util.BaseStationTransfer import *
-from A2.util.TaskSQLUtil import *
+from ..util.BaseStationTransfer import *
+from ..util.TaskSQLUtil import *
 
 import numpy as np
 
 
 class A2EnvExtreme:
     def __init__(self):
-
-        resetDB()
+        
         # get the basestation model
         baseStationsDF = selectAll()
         self.baseStations = BSDF2BS(baseStationsDF)
@@ -19,12 +20,12 @@ class A2EnvExtreme:
         # state1 global resource
         self.G_total = np.array([self.baseStations[i].global_computing_resource for i in range(self.b)])
         self.Gb_bar = np.array([self.baseStations[i].reversed_computing_resource for i in range(self.b)])
-        #TODO: get the real-time vehicle desnsity from sumo
-        self.Vehicle_density = np.array([40, 5])
+        # get the real-time vehicle desnsity from sumo
+        self.Vehicle_density = np.array([0, 0])
         self.Gb = self.get_Gb()  # state1 global resource
 
         # state2 reliability
-        self.Tn = [4,4,4] #maximun tolerance delay
+        self.Tn = [4,4] #maximun tolerance delay
          # get from zequn
         self.omega1 = 0.8  # range from[0,1]
         self.omega2 = 0.8
@@ -102,14 +103,6 @@ class A2EnvExtreme:
 
         return
 
-    # def update_total_received(self, Ib):
-    #     self.total_received_task[Ib] += 1
-    #     self.baseStations[Ib].total_received_task = self.total_received_task[Ib]
-    #     self.baseStations[Ib].id = "BASESTATION" + str(Ib)
-    #     # print("id:",self.baseStations[Ib].id)
-    #     update(self.baseStations[Ib])
-    #     return
-
     def update_completion_ratio(self, Ib,task):
         one = 1 if task.delay < self.Tn[Ib] else 0
         total_received_task = countAllByBS()
@@ -124,18 +117,6 @@ class A2EnvExtreme:
         self.baseStations[Ib].reliability = result
         return
 
-    def update_reliability(self, Ib):
-
-        #TODO:update the reliability as the update task lists
-        self.get_normalized_utilization(Ib)
-        self.update_compute_efficiency(Ib)
-        self.update_completion_ratio(Ib)
-        self.reliability[Ib] = self.get_reliability(Ib)
-        self.baseStations[Ib].reliability = self.reliability[Ib]
-        self.baseStations[Ib].id = "BASESTATION" + str(Ib)
-        # print("id:", self.baseStations[Ib].id)
-        update(self.baseStations[Ib])
-        return
 
     def get_verify_time1(self):
         return np.random.uniform(15, 30)
@@ -143,10 +124,10 @@ class A2EnvExtreme:
     def get_verify_time2(self):
         return np.random.uniform(10, 21)
 
-        # def get_reward(self,Ib,Sbk):
 
     def get_reward(self, Ib):
         Sbk = 8
+        #TODO: the delay should be got from real blockchain
         if Ib == 0:
             delay = self.get_verify_time1()
         else:
@@ -163,11 +144,24 @@ class A2EnvExtreme:
         tasks = selectLatest(num)
         for task in tasks:
             Ib = task.allocation_basestation_id
+
+            #update state 1
+            #TODO:get the computing resource
+            self.G_total = np.array([self.baseStations[i].global_computing_resource for i in range(self.b)])
+            self.Gb_bar = np.array([self.baseStations[i].reversed_computing_resource for i in range(self.b)])
+            # get the real-time vehicle desnsity from sumo
+            self.Vehicle_density = task.vehicle_density
+            self.Gb = self.get_Gb()  # state1 global resource
+            
+            #update state 2
             normalized_utilization = self.get_normalized_utilization(Ib,task)
             self.update_compute_efficiency(Ib,normalized_utilization)
             self.update_completion_ratio(Ib,task)
             self.get_reliability(Ib)
+
+            #save the state to the basestation database
             update(self.baseStations[Ib])
+        return
 
 
 

@@ -1,7 +1,7 @@
 from ray import tune
 import ray
 from ray.rllib.agents.dqn import DQNTrainer
-from A2.env.A2Env import A2Env
+from env.A2Env import A2Env
 ray.init()
 t = tune.run(
     DQNTrainer,

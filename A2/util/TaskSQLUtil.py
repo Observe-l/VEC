@@ -1,7 +1,7 @@
 import datetime
 import pymysql
-from A2.util.TaskTransfer import TaskDF2Task
-from A2.util.Task import Task
+from TaskTransfer import TaskDF2Task
+from Task import Task
 import pandas as pd
 import json
 
@@ -11,11 +11,12 @@ def insert(task:Task):
     cursor = conn.cursor()
 
     vehicle_density = json.dumps(task.vehicle_density)
+
     sql = "INSERT INTO TASK (id,offload_vehicle_id,\
-        service_vehicle_id,allocation_basestation_id,allocation_begin_time,allocation_end_time,done_status) VALUES (" + str(
+        service_vehicle_id,allocation_basestation_id,allocation_begin_time,allocation_end_time,done_status,vehicle_density) VALUES (" + str(
         task.id) + " ," + str(task.offload_vehicle_id) + " ," \
           + str(task.service_vehicle_id) + " ," + str(task.allocation_basestation_id) + " ,now(3),now(3)," \
-          + str(task.done_status) +","+vehicle_density+ ");"
+          + str(task.done_status) +",\'"+vehicle_density+ "\');"
     print(sql)
     # 执行sql语句
     cursor.execute(sql)
@@ -75,7 +76,7 @@ def createDB():
             allocation_begin_time TIMESTAMP(3),\
             allocation_end_time TIMESTAMP(3) DEFAULT '2022-02-22 19:41:11.524',\
             done_status TINYINT,\
-            vehicle_density VARCHAR);"
+            vehicle_density VARCHAR(40));"
     cursor=c.execute(command)
     conn.commit()
     conn.close()
@@ -113,8 +114,16 @@ def countAll():
     return count
 
 
-
-
-
 if __name__ == '__main__':
-    createDB()
+    task = Task()
+    task.allocation_basestation_id=1
+    task.done_status=1
+    task.id=1
+    task.offload_vehicle_id=1
+    task.service_vehicle_id=2
+    task.vehicle_density = {'0':4,'1':24}
+    insert(task)
+    # task = selectLatest(1)
+    # print("1")
+
+
