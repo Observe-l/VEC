@@ -12,7 +12,7 @@ class A2Env(gym.Env):
         # dimension = 2*self.b+1
         # self.action_space = gym.spaces.Tuple([Discrete(self.b),Discrete(40)])
         # self.action_space = gym.spaces.MultiDiscrete([self.b,40])
-        self.b=2
+        self.b=2 #number of base station
         self.action_space = gym.spaces.Discrete(self.b)
         observation_array_min = np.append([0.0 for i in range(self.b)],[0.0 for i in range(self.b)])
         observation_array_min = np.append(observation_array_min,[0.0])
@@ -28,7 +28,21 @@ class A2Env(gym.Env):
         reset the state of the environment
         @return: state
         '''
-        self.base_station = A2EnvExtreme()
+
+        #wait for the sql to add data
+        while True:
+            time.sleep(2)
+            #count the total number of tasks
+            temp_task_num = countAll()
+            #load the number of tasks
+            # update the base station database if there exists update
+            if temp_task_num!=self.task_num:
+                diff = temp_task_num-self.task_num
+                self.task_num=temp_task_num
+                self.base_station.updateBSByTasks(diff)
+                break
+
+        self.base_station = A2EnvExtreme()   #Load the data from the dataset
         self.observation = np.concatenate([self.base_station.Gb,self.base_station.reliability,self.base_station.Ntr])
         self.done = False
         self.step_num = 0
@@ -44,41 +58,16 @@ class A2Env(gym.Env):
         print("The base station chosen is:",action)
         result=str(action)
 
-        # with open("home/jaimin/PycharmProjects/VECSQL/result/result.txt", 'a') as file:
-        #     file.write(result)
-        #     file.write('\n')
-        #     file.close()
-
         self.observation = np.concatenate([self.base_station.Gb, self.base_station.reliability, self.base_station.Ntr])
         # reward=self.base_station.get_reward(action[0],action[1])
-
+              #update the state of chosen base station
+        self.base_station.get_Ntr()
         reward = self.base_station.get_reward(action)
+        #update the step number:iteration number=1
         self.step_num += 1
-        if self.step_num > 100:
+        if self.step_num > 0:
             self.done = True
         self.observation = np.concatenate([self.base_station.Gb, self.base_station.reliability, self.base_station.Ntr])
-
-
-        #wait for the sql to add data
-        while True:
-            time.sleep(2)
-            #count the total number of tasks
-            temp_task_num = countAll()
-            #load the number of tasks
-
-            # update the base station database if there exists update
-            if temp_task_num!=self.task_num:
-                diff = temp_task_num-self.task_num
-                self.task_num=temp_task_num
-                self.base_station.updateBSByTasks(diff)
-                break
-        print("Go on!")
-        #update the state of chosen base station
-        self.base_station.get_Ntr()
-        self.base_station.get_Gb()
-        # print("last state:",self.observation[0]-action)
-        # print("action",action)
-        # print("state:",self.observation[0])
 
         return self.observation,reward,self.done,{}
 

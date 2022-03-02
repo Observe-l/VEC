@@ -1,5 +1,6 @@
 from A2.util.Task import Task
 import datetime
+import json
 
 
 def TaskDF2Task(taskDF):
@@ -23,5 +24,6 @@ def TaskDF2Task(taskDF):
         diff=task.allocation_end_time-task.allocation_begin_time
         task.delay=diff.microseconds
         task.done_status=row[6]
+        task.vehicle_density = json.loads(row[7])
         tasks.append(task)
     return tasks

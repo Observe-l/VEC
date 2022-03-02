@@ -7,4 +7,5 @@ class Task():
         self.allocation_begin_time=None
         self.allocation_end_time=None
         self.done_status=None
+        self.vehicle_density = None   #type = dic
         self.delay = None
