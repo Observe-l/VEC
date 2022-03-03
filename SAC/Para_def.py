@@ -9,14 +9,18 @@ mydb = pymysql.connect(
   password="666888",
   database="SAC"
 )
-delaycmd = "select offloading_delay from sacenv"
+
+# delaycmd = "select offloading_delay from sacenv"
 compcmd = "select computation_size from sacenv"
+
+# delaycmd = "select offloading_delay from" + table + "where timestamp = " + timestamp
+# compcmd = "select computation_size from" + table + "where timestamp = " + timestamp
 
 # tdelay = pd.read_sql(delaycmd, mydb)
 # csize = pd.read_sql(compcmd, mydb)
 
 class SACEnv:
-    def __init__(self,s):
+    def __init__(self, s):
         self.s = s
         self.t = 1
         self.u = 0.1
@@ -25,8 +29,8 @@ class SACEnv:
         self.lam = -10
         self.Tn = 10
         self.pn = 0.1
-        self.Vehicle_density = self.get_vehicle_density()
-        self.t_delay = self.get_t_delay()
+        # self.Vehicle_density = self.get_vehicle_density()
+        self.t_delay = np.zeros(s)
         self.utility = np.zeros(s)
         self.Utility_task = np.zeros(s)
 
@@ -67,17 +71,17 @@ class SACEnv:
         # b1 = np.float32(b)
         # c1 = np.float32(c)
         # return np.array([a1, b1, c1])
-        # return np.random.uniform(0.2, 4, (self.s,))
-        csize = pd.read_sql(compcmd, mydb)
-        csi = np.array(csize)
-        csi1 = np.float32(csi)
-        return csi1.reshape((3,))
+        return np.random.uniform(0.2, 4, (self.s,))
+        # csize = pd.read_sql(compcmd, mydb)
+        # csi = np.array(csize)
+        # csi1 = np.float32(csi)
+        # return csi1.reshape((4,))
 
 
     def get_D_size(self):
         return np.random.uniform(0.2, 4, (self.s,))
 
-    def get_t_delay(self):
+    def get_t_delay(self, Vs):
         # a = np.random.uniform(0.1, 0.5)
         # b = np.random.uniform(5, 10)
         # c = np.random.uniform(8, 18)
@@ -86,13 +90,26 @@ class SACEnv:
         # c1 = np.float32(c)
         # return np.array([a1, b1, c1])
         # return np.random.uniform(1, 13, (self.s,))
-        tdelay = pd.read_sql(delaycmd, mydb)
-        tde = np.array(tdelay)
-        tde1 = np.float32(tde)
-        return tde1.reshape((3,))
+        # tdelay = np.zeros(4)
+        sv = Vs
+        event = 1
+        tv = 0
+        datasize = 4
+        vehicle = "vehicle" + str(sv)
+        table = "ts_vehicle" + str(tv)
+        timestamp = str(event)
+        delaycmd = "select " + vehicle + " from " + table + " WHERE EVENT = " + timestamp
+        transmission = np.float32(pd.read_sql(delaycmd, mydb))
+        tde = datasize/transmission
+        self.t_delay[Vs] = tde
+        # tde = np.array(tdelay)
+        # tde1 = np.float32(tde)
+        # return tde1.reshape((4,))
+        return self.t_delay
 
     def get_utility(self,Vs):
-        self.t_delay = self.get_t_delay()
+
+        self.t_delay = self.get_t_delay(Vs)
         difference = self.Tn - self.t_delay[Vs]
         if difference<=0:
             self.utility[Vs] = self.lam
@@ -100,8 +117,8 @@ class SACEnv:
             self.utility[Vs] = np.log(1+difference)
         return
 
-    def get_vehicle_density(self):
-        return np.random.uniform(5, 40)
+    # def get_vehicle_density(self):
+    #     return np.random.uniform(5, 40)
 
     def get_Utility_task(self,Vs):
         self.Utility_task[Vs] = self.utility[Vs] - self.pn * self.C_size[Vs]
@@ -146,16 +163,17 @@ class SACEnv:
 
 if __name__ == '__main__':
     #vailable computing resource
-    s = 3
+    s = 4
     bs = SACEnv(s)
     # print(bs.Fs)
     # print(bs.snr)
     # print(bs.link_dur)
     # print(bs.reliability)
-    d = bs.C_size.reshape((3,))
+    d = bs.C_size.reshape((4,))
     print(bs.D_size)
     print(bs.C_size)
-    print(bs.t_delay)
+    print(bs.get_t_delay(1))
+
 
 
 
