@@ -4,9 +4,8 @@ import numpy as np
 # import udp_request
 from Para_def import SACEnv
 import mysql.connector
-import sys
 
-sys.setrecursionlimit(10000)
+
 
 class VECEnv(gym.Env):
     def __init__(self,env_config):
@@ -52,14 +51,14 @@ class VECEnv(gym.Env):
         # print("waitting request")
         # msg,addr = udp_request.udp_server()
 
-        ts = 0
+        ts = 1
         if action == ts:
             self.observation = np.concatenate([self.base_station.Fs, self.base_station.snr, self.base_station.link_dur, self.base_station.reliability, self.base_station.C_size, self.base_station.D_size, self.base_station.t_delay])
             reward = -1000
             self.done = False
         else:
-            self.base_station.get_t_delay(action)
-            self.base_station.get_utility(action)
+            self.base_station.get_t_delay(action, ts)
+            self.base_station.get_utility(action, ts)
             self.base_station.get_Utility_task(action)
             self.base_station.get_normalized_utility(action)
             self.base_station.update_completion_ratio(action)

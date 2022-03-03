@@ -81,7 +81,7 @@ class SACEnv:
     def get_D_size(self):
         return np.random.uniform(0.2, 4, (self.s,))
 
-    def get_t_delay(self, Vs):
+    def get_t_delay(self, Vs, ts):
         # a = np.random.uniform(0.1, 0.5)
         # b = np.random.uniform(5, 10)
         # c = np.random.uniform(8, 18)
@@ -93,10 +93,10 @@ class SACEnv:
         # tdelay = np.zeros(4)
         sv = Vs
         event = 1
-        tv = 0
+        # tv = 0
         datasize = 4
         vehicle = "vehicle" + str(sv)
-        table = "ts_vehicle" + str(tv)
+        table = "ts_vehicle" + str(ts)
         timestamp = str(event)
         delaycmd = "select " + vehicle + " from " + table + " WHERE EVENT = " + timestamp
         transmission = np.float32(pd.read_sql(delaycmd, mydb))
@@ -107,9 +107,9 @@ class SACEnv:
         # return tde1.reshape((4,))
         return self.t_delay
 
-    def get_utility(self,Vs):
+    def get_utility(self,Vs, ts):
 
-        self.t_delay = self.get_t_delay(Vs)
+        self.t_delay = self.get_t_delay(Vs,ts)
         difference = self.Tn - self.t_delay[Vs]
         if difference<=0:
             self.utility[Vs] = self.lam
