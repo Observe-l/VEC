@@ -1,4 +1,6 @@
 import pymysql
+import sys
+sys.path.append("..")
 from util.BaseStation import BaseStation
 from util.BaseStationTransfer import *
 import pandas as pd
@@ -9,9 +11,9 @@ def insert(bs:BaseStation):
 
     cursor = conn.cursor()
     sql = "INSERT INTO BASESTATION (id,global_computing_resource,\
-    reversed_computing_resource,computing_efficiency,completion_ratio,\
+    reserved_computing_resource,vehicle_density,computing_efficiency,completion_ratio,\
     total_received_task,reliability) VALUES ("+str(bs.id)+" ,"+str(bs.global_computing_resource)+" ,"\
-              +str(bs.reversed_computing_resource)+" ,"+str(bs.computing_efficiency)+" ,"\
+              +str(bs.reserved_computing_resource)+" ,"+str(bs.vehicle_density)+","+str(bs.computing_efficiency)+" ,"\
               +str(bs.completion_ratio)+" ,"+str(bs.total_received_task)+" ,"+str(bs.reliability)+")"
     try:
         # 执行sql语句
@@ -56,7 +58,8 @@ def update(bs):
 
     c = conn.cursor()
     command = " UPDATE BASESTATION set global_computing_resource="+str(bs.global_computing_resource)\
-        +",reversed_computing_resource="+str(bs.reversed_computing_resource)\
+        +",reserved_computing_resource="+str(bs.reserved_computing_resource)\
+        +",vehicle_density="+str(bs.vehicle_density) \
         +",computing_efficiency="+str(bs.computing_efficiency) \
         +",completion_ratio=" + str(bs.completion_ratio) \
         +",total_received_task=" + str(bs.total_received_task) \
@@ -89,7 +92,8 @@ def resetDB():
     #initialize the base station dataframe
     data = {'id': [1, 2],
             'global_computing_resource': [20, 29],
-            'reversed_computing_resource': [10, 0],
+            'reserved_computing_resource': [10, 0],
+            'vehicle_density':[40,5],
             'computing_efficiency': [0, 0],
             'completion_ratio': [0, 0],
             'total_received_task': [0, 0],
@@ -99,7 +103,8 @@ def resetDB():
     bss = BSDF2BS(df)
     for bs in bss:
         command = " UPDATE BASESTATION set global_computing_resource=" + str(bs.global_computing_resource) \
-              + ",reversed_computing_resource=" + str(bs.reversed_computing_resource) \
+              + ",reserved_computing_resource=" + str(bs.reserved_computing_resource) \
+              +",vehicle_density="+str(bs.vehicle_density)\
               + ",computing_efficiency=" + str(bs.computing_efficiency) \
               + ",completion_ratio=" + str(bs.completion_ratio) \
               + ",total_received_task=" + str(bs.total_received_task) \
@@ -117,7 +122,8 @@ def createDB():
     c=conn.cursor()
     command = "CREATE TABLE BASESTATION( id VARCHAR(20) PRIMARY KEY NOT NULL,\
              global_computing_resource REAL,\
-            reversed_computing_resource REAL,\
+            reserved_computing_resource REAL, \
+            vehicle_density REAL, \
             computing_efficiency REAL,\
             completion_ratio REAL,\
             total_received_task REAL,\
@@ -135,7 +141,8 @@ def initializeDB():
     # initialize the base station dataframe
     data = {'id': [1, 2],
             'global_computing_resource': [20, 29],
-            'reversed_computing_resource': [10, 0],
+            'reserved_computing_resource': [10, 0],
+            'vehicle_density':[40,5],
             'computing_efficiency': [0, 1],
             'completion_ratio': [0, 1],
             'total_received_task': [0, 1],
@@ -145,11 +152,12 @@ def initializeDB():
     bss = BSDF2BS(df)
     for bs in bss:
         command = " insert into BASESTATION (id,global_computing_resource,\
-        reversed_computing_resource,computing_efficiency,\
+        reserved_computing_resource,vehicle_density,computing_efficiency,\
         completion_ratio,total_received_task,reliability) \
         values ("+str(bs.id)+\
         ","+str(bs.global_computing_resource)+ \
-        ","+str(bs.reversed_computing_resource) +\
+        ","+str(bs.reserved_computing_resource) +\
+        ","+str(bs.vehicle_density)+\
         ","+str(bs.computing_efficiency)+\
         ","+str(bs.completion_ratio)+\
         ","+str(bs.total_received_task) +\
@@ -163,7 +171,8 @@ def initializeDB():
 
 
 if __name__ == '__main__':
-     selectAll
+    # createDB()
+    initializeDB()
 
 
 

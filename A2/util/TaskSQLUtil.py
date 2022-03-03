@@ -1,9 +1,12 @@
 import datetime
 import pymysql
+import sys
+sys.path.append("..")
 from util.TaskTransfer import TaskDF2Task
 from util.Task import Task
 import pandas as pd
 import json
+import numpy as np
 
 def insert(task:Task):
     conn = pymysql.connect(host='localhost', user='VEC', passwd='666888', database='DDQN')
@@ -13,9 +16,9 @@ def insert(task:Task):
     vehicle_density = json.dumps(task.vehicle_density)
 
     sql = "INSERT INTO TASK (id,offload_vehicle_id,\
-        service_vehicle_id,allocation_basestation_id,allocation_begin_time,allocation_end_time,done_status,vehicle_density) VALUES (" + str(
+        service_vehicle_id,allocation_basestation_id,delay,done_status,vehicle_density) VALUES (" + str(
         task.id) + " ," + str(task.offload_vehicle_id) + " ," \
-          + str(task.service_vehicle_id) + " ," + str(task.allocation_basestation_id) + " ,now(3),now(3)," \
+          + str(task.service_vehicle_id) + " ," + str(task.allocation_basestation_id) + " ,"+str(task.delay)+"," \
           + str(task.done_status) +",\'"+vehicle_density+ "\');"
     print(sql)
     # 执行sql语句
@@ -72,9 +75,8 @@ def createDB():
     command = "CREATE TABLE TASK( id VARCHAR(20) PRIMARY KEY NOT NULL,\
             offload_vehicle_id REAL,\
             service_vehicle_id REAL,\
-            allocation_basestation_id REAL,\
-            allocation_begin_time TIMESTAMP(3),\
-            allocation_end_time TIMESTAMP(3) DEFAULT '2022-02-22 19:41:11.524',\
+            allocation_basestation_id INT,\
+            delay REAL,\
             done_status TINYINT,\
             vehicle_density VARCHAR(40));"
     cursor=c.execute(command)
@@ -115,15 +117,20 @@ def countAll():
 
 
 if __name__ == '__main__':
+    # createDB()
     task = Task()
     task.allocation_basestation_id=1
     task.done_status=1
-    task.id=1
+    task.id=4
+    task.delay = 3.2
     task.offload_vehicle_id=1
     task.service_vehicle_id=2
-    task.vehicle_density = {'0':4,'1':24}
+    task.vehicle_density = {'1':4,'2':24}    #base station id is from 1
     insert(task)
-    # task = selectLatest(1)
-    # print("1")
+    # task1 = selectLatest(1)
+    # print(task1[0].vehicle_density[str(1)])
+    # a = np.array([task1[0].vehicle_density[str(i+1)] for i in range(2)])
+    # print(a)
+
 
 

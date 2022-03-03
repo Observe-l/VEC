@@ -30,7 +30,7 @@ class A2Env(gym.Env):
         reset the state of the environment
         @return: state
         '''
-
+        self.base_station = A2EnvExtreme()   #Load the data from the dataset
         #wait for the sql to add data
         while True:
             time.sleep(2)
@@ -44,7 +44,6 @@ class A2Env(gym.Env):
                 self.base_station.updateBSByTasks(diff)
                 break
 
-        self.base_station = A2EnvExtreme()   #Load the data from the dataset
         self.observation = np.concatenate([self.base_station.Gb,self.base_station.reliability,self.base_station.Ntr])
         self.done = False
         self.step_num = 0
