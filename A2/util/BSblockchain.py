@@ -1,7 +1,7 @@
 import docker
 import json
 import time
-from BaseStation import BaseStation
+from util.BaseStation import BaseStation
 
 # Update/instert one data to ledger.
 def update(bs: BaseStation):

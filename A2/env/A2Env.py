@@ -21,9 +21,9 @@ class A2Env(gym.Env):
         observation_array_max = np.append([100.5 for i in range(self.b)],[10.0 for i in range(self.b)])
         observation_array_max = np.append(observation_array_max,[10.0])
         self.observation_space = gym.spaces.box.Box(observation_array_min,observation_array_max,dtype=np.float32)
-        self.reset()
         # TODO:add reset the task table
         self.task_num=0
+        self.reset()
 
     def reset(self):
         '''

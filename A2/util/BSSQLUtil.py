@@ -1,6 +1,6 @@
 import pymysql
-from BaseStation import BaseStation
-from BaseStationTransfer import *
+from util.BaseStation import BaseStation
+from util.BaseStationTransfer import *
 import pandas as pd
 
 def insert(bs:BaseStation):

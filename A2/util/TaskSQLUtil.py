@@ -1,7 +1,7 @@
 import datetime
 import pymysql
-from TaskTransfer import TaskDF2Task
-from Task import Task
+from util.TaskTransfer import TaskDF2Task
+from util.Task import Task
 import pandas as pd
 import json
 

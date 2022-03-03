@@ -2,8 +2,8 @@ import sys
 sys.path.append('..')
 from util.BaseStation import *
 import numpy as np
-from ..util.BaseStationTransfer import *
-from ..util.TaskSQLUtil import *
+from util.BaseStationTransfer import *
+from util.TaskSQLUtil import *
 
 import numpy as np
 
