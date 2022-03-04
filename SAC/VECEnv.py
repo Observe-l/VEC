@@ -6,10 +6,8 @@ from Para_def import SACEnv
 from time import time
 import mysql.connector
 
-import sys
-sys.path.append("..")
-import A2.util.TaskSQLUtil as TaskSQLUtil
-from A2.util.Task import Task
+import TaskSQLUtil as TaskSQLUtil
+from Task import Task
 
 class VECEnv(gym.Env):
     def __init__(self,env_config):

@@ -22,12 +22,11 @@ if __name__ == "__main__":
     ray.init(address='auto', _redis_password='5241590000000000')
 
     # Chose Task randomly. 0.2MB,
-    file = []
-    file[0] = ray.data.read_csv("/home/ubuntu/Documents/Taskfile/task_200Kbits.csv")
-    file[1] = ray.data.read_csv("/home/ubuntu/Documents/Taskfile/task_1Mbits.csv")
-    file[2] = ray.data.read_csv("/home/ubuntu/Documents/Taskfile/task_2Mbits.csv")
-    file[3] = ray.data.read_csv("/home/ubuntu/Documents/Taskfile/task_3Mbits.csv")
-    file[4] = ray.data.read_csv("/home/ubuntu/Documents/Taskfile/task_4Mbits.csv")
+    file0 = ray.data.read_csv("/home/ubuntu/Documents/Taskfile/task_200Kbits.csv")
+    file1 = ray.data.read_csv("/home/ubuntu/Documents/Taskfile/task_1Mbits.csv")
+    file2 = ray.data.read_csv("/home/ubuntu/Documents/Taskfile/task_2Mbits.csv")
+    file3 = ray.data.read_csv("/home/ubuntu/Documents/Taskfile/task_3Mbits.csv")
+    file4 = ray.data.read_csv("/home/ubuntu/Documents/Taskfile/task_4Mbits.csv")
     Dn = ['0.2','1','2','3','4']
     Cn = ['0.2','0.83','1.62','2.41','3.2']
     Station_IP = "192.168.1.117"
@@ -62,7 +61,18 @@ if __name__ == "__main__":
             vid = "vehicle3"
         else:
             vid = "vehicle4"
-        task = cal.options(num_cpus=1, resources={vid: 1}).remote(file[n])
+
+        if n == 0:
+            task = cal.options(num_cpus=1, resources={vid: 1}).remote(file0)
+        elif n== 1:
+            task = cal.options(num_cpus=1, resources={vid: 1}).remote(file1)
+        elif n== 2:
+            task = cal.options(num_cpus=1, resources={vid: 1}).remote(file2)
+        elif n== 3:
+            task = cal.options(num_cpus=1, resources={vid: 1}).remote(file3)
+        elif n== 4:
+            task = cal.options(num_cpus=1, resources={vid: 1}).remote(file4)
+        
         result = ray.get(task)
         end_time = time.time()
         total_time = end_time-start_time
