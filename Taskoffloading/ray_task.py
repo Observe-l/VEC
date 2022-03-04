@@ -86,4 +86,4 @@ if __name__ == "__main__":
             print("Completed all of the events")
         print("#",n," task is completed by: ",vid)
         print("Total time: ",total_time)
-        msg[0]=b"none"
+        msg = [b"none",b"none",b"none",b"none"]

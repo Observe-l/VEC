@@ -89,8 +89,15 @@ class VECEnv(gym.Env):
             SAC_time = self.end_time - self.start_time
             # Transmite ID, event, etc. to get_t_delay function
             udp_request.udp_send("offloading","action","file_name","Task_name",self.addr[0])
+            self.msg, self.addr = udp_request.udp_server()
+            if self.msg[0].decode().rstrip('\x00') != "complete":
+                print("Request error, error head: ",self.msg[0].decode().rstrip('\x00'))
+                exit(1)
+            Cn = self.msg[1].decode().rstrip('\x00')
+            t2 = self.msg[2].decode().rstrip('\x00')
+            fn = self.msg[3].decode().rstrip('\x00')
 
-            tde = self.base_station.get_t_delay(action,task_ID,event_ID,Dn)
+            tde = self.base_station.get_t_delay(action,task_ID,event_ID,Dn,t2)
             self.base_station.get_utility(action,tde)
             self.base_station.get_Utility_task(action)
             self.base_station.get_normalized_utility(action)

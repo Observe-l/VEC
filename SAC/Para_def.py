@@ -83,7 +83,7 @@ class SACEnv:
     def get_D_size(self):
         return np.random.uniform(0.2, 4, (self.s,))
 
-    def get_t_delay(self, Vs:int, task_ID:str, event_ID:str, Dn:str):
+    def get_t_delay(self, Vs:int, task_ID:str, event_ID:str, Dn:str, t2:str):
         # a = np.random.uniform(0.1, 0.5)
         # b = np.random.uniform(5, 10)
         # c = np.random.uniform(8, 18)
@@ -98,7 +98,7 @@ class SACEnv:
         table = "ts_vehicle" + task_ID
         delaycmd = "select " + vehicle + " from " + table + " WHERE EVENT = " + event_ID
         transmission = np.float32(pd.read_sql(delaycmd, mydb))
-        tde = float(Dn)/transmission
+        tde = float(Dn)/transmission + float(t2)
         self.t_delay[Vs] = tde
         # tde = np.array(tdelay)
         # tde1 = np.float32(tde)
