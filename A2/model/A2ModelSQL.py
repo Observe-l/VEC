@@ -74,11 +74,10 @@ class A2EnvExtreme:
 
         return
 
-    def update_completion_ratio(self, Ib,task):
-        one = 1 if task.delay < self.Tn[Ib] else 0
-        self.baseStations[Ib].completion_ratio = (self.baseStations[Ib].total_received_task * self.baseStations[Ib].completion_ratio + one) / (
-                self.baseStations[Ib].total_received_task+ 1)
-        self.baseStations[Ib].total_received_task+=1
+    def update_completion_ratio(self, Ib):
+        self.baseStations[Ib].total_received_task = countAllByBS(Ib)
+        num_done = countDoneByBS(Ib)
+        self.baseStations[Ib].completion_ratio = num_done/self.baseStations[Ib].total_received_task
         return
 
     def get_reliability(self, Ib):
