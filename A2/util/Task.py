@@ -1,9 +1,9 @@
 class Task():
-    def __init__(self):
-        self.id = None
-        self.offload_vehicle_id=None
-        self.service_vehicle_id=None
-        self.allocation_basestation_id=None
-        self.done_status=None
-        self.vehicle_density = None   #type = dic
-        self.delay = None
+    def __init__(self,id=None,o_id=None,s_id=None,a_id=None,status=None,density=None,delay=None):
+        self.id = id
+        self.offload_vehicle_id=o_id
+        self.service_vehicle_id=s_id
+        self.allocation_basestation_id=a_id
+        self.done_status=status
+        self.vehicle_density = density   #type = dic
+        self.delay = delay

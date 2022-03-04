@@ -28,30 +28,51 @@ if __name__ == "__main__":
     file[2] = ray.data.read_csv("/home/ubuntu/Documents/Taskfile/task_2Mbits.csv")
     file[3] = ray.data.read_csv("/home/ubuntu/Documents/Taskfile/task_3Mbits.csv")
     file[4] = ray.data.read_csv("/home/ubuntu/Documents/Taskfile/task_4Mbits.csv")
-    size = [0.2,1,2,3,4]
+    Dn = ['0.2','1','2','3','4']
+    Cn = ['0.2','0.83','1.62','2.41','3.2']
+    Station_IP = "192.168.1.117"
+    req = "request"
+    complete = "complete"
+    allocate = "offloading"
+    # Rpi 1, ID is 0
+    tv_id = '0'
     
     a = input("Start\n")
+    '''
+    Init some parameters
+    '''
     n = 0
+    event = 1
+    msg = ["none","none","none","none"]
+
     while 1:
         n = random.choice([0,1,2,3,4])
         start_time = time.time()
-        # Send a request
-        # msg = struct.pack('!20s20sf',b'request',b'vehicle1',size[n])
-        udp_request.udp_send("request","vehicle1",size[n],"192.168.1.117")
-        msg,addr =  udp_request.udp_server()
+        '''Send request to SAC until SAC return a "offloading" packet '''
+        while msg[0].decode().rstrip('\x00') != "offloading":
+            udp_request.udp_send(req,tv_id,str(event),Dn[n],Station_IP)
+            msg,addr =  udp_request.udp_server()
         print("get return")
         action = msg[1].decode().rstrip('\x00')
         if action == '0':
             vid = "vehicle1"
         elif action == '1':
             vid = "vehicle2"
-        else:
+        elif action == '2':
             vid = "vehicle3"
+        else:
+            vid = "vehicle4"
         task = cal.options(num_cpus=1, resources={vid: 1}).remote(file[n])
         result = ray.get(task)
         end_time = time.time()
         total_time = end_time-start_time
+        fn = float(Cn[n])/total_time
         # msg = struct.pack('!20s20sf',b'complete',vid.encode(),total_time)
-        udp_request.udp_send("complete",vid,total_time,"192.168.1.117")
+        udp_request.udp_send(complete,Cn[n],str(total_time),str(fn),Station_IP)
+        if event < 14:
+            event += 1
+        else:
+            event = 1
+            print("Completed all of the events")
         print("#",n," task is completed by: ",vid)
         print("Total time: ",total_time)

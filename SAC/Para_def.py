@@ -2,10 +2,12 @@ import numpy as np
 import pandas as pd
 import pymysql
 import random
+import sys
+
 
 mydb = pymysql.connect(
   host="localhost",
-  user="zequn",
+  user="VEC",
   password="666888",
   database="SAC"
 )
@@ -81,7 +83,7 @@ class SACEnv:
     def get_D_size(self):
         return np.random.uniform(0.2, 4, (self.s,))
 
-    def get_t_delay(self, Vs, ts):
+    def get_t_delay(self, Vs:int, task_ID:str, event_ID:str, Dn:str):
         # a = np.random.uniform(0.1, 0.5)
         # b = np.random.uniform(5, 10)
         # c = np.random.uniform(8, 18)
@@ -92,25 +94,22 @@ class SACEnv:
         # return np.random.uniform(1, 13, (self.s,))
         # tdelay = np.zeros(4)
         sv = Vs
-        event = 1
-        # tv = 0
-        datasize = 4
         vehicle = "vehicle" + str(sv)
-        table = "ts_vehicle" + str(ts)
-        timestamp = str(event)
-        delaycmd = "select " + vehicle + " from " + table + " WHERE EVENT = " + timestamp
+        table = "ts_vehicle" + task_ID
+        delaycmd = "select " + vehicle + " from " + table + " WHERE EVENT = " + event_ID
         transmission = np.float32(pd.read_sql(delaycmd, mydb))
-        tde = datasize/transmission
+        tde = float(Dn)/transmission
         self.t_delay[Vs] = tde
         # tde = np.array(tdelay)
         # tde1 = np.float32(tde)
         # return tde1.reshape((4,))
-        return self.t_delay
+        return tde
 
-    def get_utility(self,Vs, ts):
+    def get_utility(self,Vs, tde:float):
 
-        self.t_delay = self.get_t_delay(Vs,ts)
-        difference = self.Tn - self.t_delay[Vs]
+        # self.t_delay = self.get_t_delay(Vs)
+        # difference = self.Tn - self.t_delay[Vs]
+        difference = self.Tn - tde
         if difference<=0:
             self.utility[Vs] = self.lam
         else:
@@ -155,6 +154,13 @@ class SACEnv:
         self.update_completion_ratio(Vs)
         self.reliability[Vs] = self.get_reliability(Vs)
         return
+    
+    def get_density(self,event:str):
+        sql_cmd = "select BS0_DENSITY, BS1_DENSITY from ts_vehicle0 where EVENT=" + event
+        data=pd.read_sql(sql_cmd,mydb)
+        for index, row in data.iterrows():
+            density = {'1':row['BS0_DENSITY'],'2':row['BS1_DENSITY']}
+        return density
 
     def get_reward(self,Vs):
         self.reward = self.Utility_task[Vs]

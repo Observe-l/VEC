@@ -8,10 +8,10 @@ def udp_server():
     sk.bind(("",4563))
     rec, cli_addr = sk.recvfrom(1024)
     # message fomat: 1.request: string; 2.ID: string; 3.Task size: float;
-    msg = struct.unpack('!20s20sf',rec)
+    msg = struct.unpack('!20s20s20s20s',rec)
     return msg, cli_addr
 
-def udp_send(req:str,ID:str,size:float,ip):
+def udp_send(req:str,data1:str,data2:str,data3:str,ip):
     sk = socket.socket(type=socket.SOCK_DGRAM)
-    msg = struct.pack('!20s20sf',req.encode(),ID.encode(),size)
+    msg = struct.pack('!20s20s20s20s',req.encode(),data1.encode(),data2.encode(),data3.encode())
     sk.sendto(msg,(ip,4563))
