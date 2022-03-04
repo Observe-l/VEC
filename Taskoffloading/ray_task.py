@@ -42,7 +42,7 @@ if __name__ == "__main__":
     '''
     n = 0
     event = 1
-    msg = ["none","none","none","none"]
+    msg = [b"none",b"none",b"none",b"none"]
 
     while 1:
         n = random.choice([0,1,2,3,4])
@@ -86,3 +86,4 @@ if __name__ == "__main__":
             print("Completed all of the events")
         print("#",n," task is completed by: ",vid)
         print("Total time: ",total_time)
+        msg[0]=b"none"

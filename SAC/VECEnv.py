@@ -72,13 +72,13 @@ class VECEnv(gym.Env):
         '''
         Get task vehicle ID and event ID from UDP message.
         '''
-        task_ID = int(self.msg[1].decode().rstrip('\x00'))
+        task_ID = self.msg[1].decode().rstrip('\x00')
         event_ID = self.msg[2].decode().rstrip('\x00')
         Dn = self.msg[3].decode().rstrip('\x00')
         '''
         When SAC choose task vehicle as service vehicle, skip this action and return penalty
         '''
-        if action == task_ID:
+        if action == int(task_ID):
             self.observation = np.concatenate([self.base_station.Fs, self.base_station.snr, self.base_station.link_dur, self.base_station.reliability, self.base_station.C_size, self.base_station.D_size, self.base_station.t_delay])
             reward = -1000
             self.done = False
@@ -108,8 +108,8 @@ class VECEnv(gym.Env):
             # print(self.step_num)
             # reward=self.base_station.get_reward(action[0],action[1])
             reward=self.base_station.get_reward(action)
-            if self.step_num>100:
-                self.done = True
+            # if self.step_num>100:
+            self.done = True
             self.observation = np.concatenate([self.base_station.Fs,self.base_station.snr,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.t_delay])
             if self.done == True:
                 mydb = mysql.connector.connect(
