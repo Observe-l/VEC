@@ -159,7 +159,7 @@ class SACEnv:
         sql_cmd = "select BS0_DENSITY, BS1_DENSITY from ts_vehicle0 where EVENT=" + event
         data=pd.read_sql(sql_cmd,mydb)
         for index, row in data.iterrows():
-            density = {'1':row['BS0_DENSITY'],'2':row['BS1_DENSITY']}
+            density = {'1':str(row['BS0_DENSITY']),'2':str(row['BS1_DENSITY'])}
         return density
 
     def get_reward(self,Vs):

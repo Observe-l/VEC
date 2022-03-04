@@ -15,9 +15,8 @@ def insert(task:Task):
 
     vehicle_density = json.dumps(task.vehicle_density)
 
-    sql = "INSERT INTO TASK (id,offload_vehicle_id,\
-        service_vehicle_id,allocation_basestation_id,delay,done_status,vehicle_density) VALUES (" + str(
-        task.id) + " ," + str(task.offload_vehicle_id) + " ," \
+    sql = "INSERT INTO TASK (offload_vehicle_id,\
+        service_vehicle_id,allocation_basestation_id,delay,done_status,vehicle_density) VALUES ( "+str(task.offload_vehicle_id) + " ," \
           + str(task.service_vehicle_id) + " ," + str(task.allocation_basestation_id) + " ,"+str(task.delay)+"," \
           + str(task.done_status) +",\'"+vehicle_density+ "\');"
     print(sql)
@@ -72,7 +71,7 @@ def createDB():
     # conn = pymysql.connect(host='localhost', user='database', passwd='123456', database='basestation')
 
     c=conn.cursor()
-    command = "CREATE TABLE TASK( id VARCHAR(20) PRIMARY KEY NOT NULL,\
+    command = "CREATE TABLE TASK( id MEDIUMINT NOT NULL AUTO_INCREMENT PRIMARY KEY,\
             offload_vehicle_id REAL,\
             service_vehicle_id REAL,\
             allocation_basestation_id INT,\

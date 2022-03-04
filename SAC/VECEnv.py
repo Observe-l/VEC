@@ -114,7 +114,7 @@ class VECEnv(gym.Env):
             if self.done == True:
                 mydb = mysql.connector.connect(
                     host="localhost",
-                    user="zequn",
+                    user="VEC",
                     password="666888",
                     database="SAC"
                 )
