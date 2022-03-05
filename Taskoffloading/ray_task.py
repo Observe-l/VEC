@@ -49,6 +49,7 @@ if __name__ == "__main__":
         start_time = time.time()
         '''Send request to SAC until SAC return a "offloading" packet '''
         while msg[0].decode().rstrip('\x00') != "offloading":
+            print("sent request")
             udp_request.udp_send(req,tv_id,str(event),Dn[n],Station_IP)
             msg,addr =  udp_request.udp_server()
         print("get return")
@@ -87,3 +88,4 @@ if __name__ == "__main__":
         print("#",n," task is completed by: ",vid)
         print("Total time: ",total_time)
         msg = [b"none",b"none",b"none",b"none"]
+        time.sleep(1.5)
