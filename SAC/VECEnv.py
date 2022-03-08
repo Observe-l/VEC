@@ -40,11 +40,7 @@ class VECEnv(gym.Env):
         self.observation_space = gym.spaces.box.Box(observation_array_min, observation_array_max, dtype=np.float32)
         self.base_station = SACEnv(self.s)
         # base station ID
-<<<<<<< HEAD
         self.bs_ID = '2'
-=======
-        self.bs_ID = '1'
->>>>>>> backup
 
         # iteration
         self.iteration = 0
@@ -62,11 +58,11 @@ class VECEnv(gym.Env):
         Receive request from Raspberry.#reset = #step + 1
         Pre-training 200 times
         '''
-        if self.iteration > 2500:
+        if self.iteration > 500:
             self.udp_status = 1
             self.train_step = 0
             start = time()
-            mydb.commit
+            mydb.commit()
             end = time()
             print("commit time: ",end-start)
             self.msg, self.addr = udp_request.receive()
@@ -155,12 +151,14 @@ class VECEnv(gym.Env):
         
         if self.done == True and self.udp_status == 1:
             for i in range(self.s):
-                sql1 = "UPDATE dataupload SET completion_ratio = %s WHERE vehicleID = %s"
-                input_data1 = (self.base_station.completion_ratio[i], i)
+                sql1 = "UPDATE dataupload SET completion_ratio = %s, reliability = %s WHERE vehicleID = %s"
+                input_data1 = (self.base_station.completion_ratio[i],self.base_station.reliability[i], i)
                 mycursor.execute(sql1, input_data1)
                 sql2 = "UPDATE dataupload SET reliability = %s WHERE vehicleID = %s"
                 input_data2 = (self.base_station.reliability[i], i)
                 mycursor.execute(sql2, input_data2)
+                print("update to vehilce:",i)
+                print("rebiability is:",self.base_station.reliability)
 
         print("Action is", action)
         return self.observation,reward,self.done,{}
