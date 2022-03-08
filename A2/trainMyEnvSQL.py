@@ -1,3 +1,5 @@
+import warnings
+warnings.filterwarnings("ignore")
 from ray import tune
 import ray
 from ray.rllib.agents.dqn import DQNTrainer
