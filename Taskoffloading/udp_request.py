@@ -27,21 +27,23 @@ If transmit successfully, return "True", else return "False"
 def send(msg,ip) -> bool:
     ack_status = False
     # message type
-    head_type = struct.unpack("!10s",msg[14:24])
+    head_type = struct.unpack("!10s",msg[4:14])
     # Creat a UDP socket, timeout = 0.1s, bind to port 4563
     sk = socket.socket(type=socket.SOCK_DGRAM)
-    # sk.settimeout(1)
+    sk.settimeout(0.1)
     sk.bind(("",4563))
-    udp_send(msg,ip)
 
-    # for i in range(0,3):
-    #     udp_send(msg,ip)
-    #     ack, addr = udp_server(sk)
-    #     # If server receives the packet, it will return the a packet.
-    #     # Otherwise, client will retransmit the packet 2 times.
-    #     if ack[0] == "ACK" and ack[1] == head_type:
-    #         ack_status = True
-    #         return ack_status
+    for i in range(0,3):
+        udp_send(msg,ip)
+        try:
+            ack, addr = udp_server(sk)
+        except:
+            pass
+        # If server receives the packet, it will return the a packet.
+        # Otherwise, client will retransmit the packet 2 times.
+        if ack[0] == "ACK":
+            ack_status = True
+            return ack_status
         
     return ack_status
 '''
@@ -52,7 +54,6 @@ def receive():
     sk = socket.socket(type=socket.SOCK_DGRAM)
     sk.bind(("",4563))
     msg,addr = udp_server(sk)
-    # ack = struct.pack("!i10s10s",2,b"ACK",msg[0].encode())
-    # time.sleep(0.1)
-    # udp_send(ack, addr)
+    ack = struct.pack("!i10s10s",2,b"ACK",msg[0].encode())
+    udp_send(ack, addr)
     return msg, addr
