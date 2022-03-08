@@ -5,12 +5,12 @@ import random
 import sys
 
 
-mydb = pymysql.connect(
-  host="localhost",
-  user="VEC",
-  password="666888",
-  database="SAC"
-)
+# mydb = pymysql.connect(
+#   host="localhost",
+#   user="VEC",
+#   password="666888",
+#   database="SAC"
+# )
 
 # delaycmd = "select offloading_delay from sacenv"
 compcmd = "select computation_size from sacenv"
@@ -26,8 +26,8 @@ class SACEnv:
         self.s = s
         self.t = 1
         self.u = 0.1
-        self.D_size = self.get_D_size()
-        self.C_size = self.get_C_size()
+        self.D_size = 0
+        self.C_size = 0
         self.lam = -10
         self.Tn = 10
         self.pn = 0.1
@@ -64,26 +64,7 @@ class SACEnv:
     def get_link_dur(self):
         return np.random.uniform(2, 5,(self.s,))
 
-
-    def get_C_size(self):
-        # a = np.random.uniform(1, 5)
-        # b = np.random.uniform(50, 60)
-        # c = np.random.uniform(70, 80)
-        # a1 = np.float32(a)
-        # b1 = np.float32(b)
-        # c1 = np.float32(c)
-        # return np.array([a1, b1, c1])
-        return np.random.uniform(0.2, 4, (self.s,))
-        # csize = pd.read_sql(compcmd, mydb)
-        # csi = np.array(csize)
-        # csi1 = np.float32(csi)
-        # return csi1.reshape((4,))
-
-
-    def get_D_size(self):
-        return np.random.uniform(0.2, 4, (self.s,))
-
-    def get_t_delay(self, Vs:int, task_ID:str, event_ID:str, Dn:str, t2:str):
+    def get_t_delay(self, Vs:int, task_ID:str, event_ID:str, t2:str, mydb):
         # a = np.random.uniform(0.1, 0.5)
         # b = np.random.uniform(5, 10)
         # c = np.random.uniform(8, 18)
@@ -98,12 +79,24 @@ class SACEnv:
         table = "ts_vehicle" + task_ID
         delaycmd = "select " + vehicle + " from " + table + " WHERE EVENT = " + event_ID
         transmission = np.float32(pd.read_sql(delaycmd, mydb))
-        tde = float(Dn)/transmission + float(t2)
+        tde = self.D_size/transmission + float(t2)
         self.t_delay[Vs] = tde
         # tde = np.array(tdelay)
         # tde1 = np.float32(tde)
         # return tde1.reshape((4,))
         return tde
+    
+    def pre_training(self, Vs:int, task_ID:str, event_ID:str, mydb):
+        Vs
+        vehicle = "vehicle" + str(Vs)
+        table = "ts_vehicle" + task_ID
+        delaycmd = "select " + vehicle + " from " + table + " WHERE EVENT = " + event_ID
+        transmission = np.float32(pd.read_sql(delaycmd, mydb))
+        tde = self.D_size/transmission + self.C_size/self.Fs[Vs]
+        self.t_delay[Vs] = tde
+        return tde
+
+
 
     def get_utility(self,Vs, tde:float):
 
@@ -120,7 +113,7 @@ class SACEnv:
     #     return np.random.uniform(5, 40)
 
     def get_Utility_task(self,Vs):
-        self.Utility_task[Vs] = self.utility[Vs] - self.pn * self.C_size[Vs]
+        self.Utility_task[Vs] = self.utility[Vs] - self.pn * self.C_size
         return self.Utility_task[Vs]
 
     def get_normalized_utility(self,Vs):
@@ -155,12 +148,24 @@ class SACEnv:
         self.reliability[Vs] = self.get_reliability(Vs)
         return
     
-    def get_density(self,event:str):
+    def get_density(self,event:str, mydb):
         sql_cmd = "select BS0_DENSITY, BS1_DENSITY from ts_vehicle0 where EVENT=" + event
         data=pd.read_sql(sql_cmd,mydb)
         for index, row in data.iterrows():
             density = {'1':str(row['BS0_DENSITY']),'2':str(row['BS1_DENSITY'])}
         return density
+    
+    def insert_relibility(self, length: int, mydb):
+        cursor = mydb.cursor()
+        sql1 = "UPDATE dataupload SET completion_ratio = %s WHERE vehicleID = %s"
+        sql2 = "UPDATE dataupload SET reliability = %s WHERE vehicleID = %s"
+        for i in range(0,length):
+            input_data1 = (self.completion_ratio[i],i)
+            input_data2 = (self.reliability[i],i)
+            cursor.execute(sql1, input_data1)
+            cursor.execute(sql2, input_data2)
+        mydb.commit()
+            
 
     def get_reward(self,Vs):
         self.reward = self.Utility_task[Vs]

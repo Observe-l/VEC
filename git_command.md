@@ -40,3 +40,27 @@ $ git clone git@github.com:Observe-l/VEC.git
 $ git pull --rebase
 ```
 
+**Update to latest version** (With local changes)
+
+```shell
+# Want to keep changes
+# Submit the changes before update
+$ git add .
+$ git commit -am "<Make a brief comment here>"
+$ git pull --rebase
+
+# Discard all the changes
+$ git add .
+$ git reset --hard HEAD
+$ git pull --rebase
+```
+
+**Upload your code to github**
+
+``` shell
+$ git add .
+$ git commit -am "<Make a brief comment here>"
+$ git pull --rebase
+$ git push origin HEAD:master
+```
+
