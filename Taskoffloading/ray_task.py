@@ -1,3 +1,4 @@
+import struct
 import time
 import udp_request
 import ray
@@ -29,6 +30,7 @@ if __name__ == "__main__":
     file4 = ray.data.read_csv("/home/ubuntu/Documents/Taskfile/task_4Mbits.csv")
     Dn = ['0.2','1','2','3','4']
     Cn = ['0.2','0.83','1.62','2.41','3.2']
+    tau_n = "10"
     Station_IP = "192.168.1.117"
     req = "request"
     complete = "complete"
@@ -42,18 +44,21 @@ if __name__ == "__main__":
     '''
     n = 0
     event = 1
-    msg = [b"none",b"none",b"none",b"none"]
 
     while 1:
-        n = random.choice([0,1,2,3,4])
+        n = random.randint(0,4)
         start_time = time.time()
         '''Send request to SAC until SAC return a "offloading" packet '''
-        while msg[0].decode().rstrip('\x00') != "offloading":
-            print("sent request")
-            udp_request.udp_send(req,tv_id,str(event),Dn[n],Station_IP)
-            msg,addr =  udp_request.udp_server()
+        # while msg[0].decode().rstrip('\x00') != "offloading":
+        #     print("sent request")
+        #     udp_request.udp_send(req,tv_id,str(event),Dn[n],Station_IP)
+        #     msg,addr =  udp_request.udp_server()
+        requset_msg = struct.pack("!i10s10s10s10s10s10s",6,b"request",tv_id.encode(),str(event).encode(),Dn[n].encode(),Cn[n].encode(),tau_n.encode())
+        udp_request.send(requset_msg,Station_IP)
+        print("sent request")
+        msg, addr = udp_request.receive()
         print("get return")
-        action = msg[1].decode().rstrip('\x00')
+        action = msg[1]
         if action == '0':
             vid = "vehicle1"
         elif action == '1':
@@ -78,8 +83,10 @@ if __name__ == "__main__":
         end_time = time.time()
         total_time = end_time-start_time
         fn = float(Cn[n])/total_time
-        # msg = struct.pack('!20s20sf',b'complete',vid.encode(),total_time)
-        udp_request.udp_send(complete,Cn[n],str(total_time),str(fn),Station_IP)
+
+        # Send complete packet to SAC
+        complete_msg = struct.pack('!i10s10s10s10s',b'complete',tv_id.encode(),str(total_time).encode(),b"successful")
+        udp_request.send(complete_msg,Station_IP)
         if event < 14:
             event += 1
         else:
@@ -87,5 +94,4 @@ if __name__ == "__main__":
             print("Completed all of the events")
         print("#",n," task is completed by: ",vid)
         print("Total time: ",total_time)
-        msg = [b"none",b"none",b"none",b"none"]
         time.sleep(1.5)

@@ -26,10 +26,10 @@ class SACEnv:
         self.s = s
         self.t = 1
         self.u = 0.1
-        self.D_size = 0
-        self.C_size = 0
+        self.D_size = 3.5
+        self.C_size = 3.2
         self.lam = -10
-        self.Tn = 10
+        self.Tn = 2
         self.pn = 0.1
         # self.Vehicle_density = self.get_vehicle_density()
         self.t_delay = np.zeros(s)
@@ -56,13 +56,17 @@ class SACEnv:
         self.link_dur = self.get_link_dur()
 
     def get_Fs(self):
-        return np.random.uniform(3, 7,(self.s,))
+        Fs = [3.5,3.8,4.5,6.8]
+        # return np.random.uniform(3, 7,(self.s,))
+        return Fs
 
     def get_snr(self):
         return np.random.uniform(1, 6,(self.s,))
 
     def get_link_dur(self):
-        return np.random.uniform(2, 5,(self.s,))
+        l_dur = [10,10,10,10]
+        # return np.random.uniform(2, 5,(self.s,))
+        return l_dur
 
     def get_t_delay(self, Vs:int, task_ID:str, event_ID:str, t2:str, mydb):
         # a = np.random.uniform(0.1, 0.5)
@@ -86,6 +90,7 @@ class SACEnv:
         # return tde1.reshape((4,))
         return tde
     
+    # Before receive real data from RPi, use some random data traing 200 times
     def pre_training(self, Vs:int, task_ID:str, event_ID:str, mydb):
         Vs
         vehicle = "vehicle" + str(Vs)

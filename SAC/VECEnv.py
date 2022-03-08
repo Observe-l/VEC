@@ -47,6 +47,7 @@ class VECEnv(gym.Env):
         # iteration
         self.iteration = 0
         self.udp_status = 0
+        self.train_step = 100
         # self.reset()
 
     def reset(self):
@@ -61,6 +62,7 @@ class VECEnv(gym.Env):
         '''
         if self.iteration > 200:
             self.udp_status = 1
+            self.train_step = 0
             mydb.commit
             self.msg, self.addr = udp_request.receive()
             '''
@@ -70,7 +72,7 @@ class VECEnv(gym.Env):
                 print("Request error, error head: ",self.msg[0])
                 exit(1)
 
-            #Update the action space
+            #Update the state space
             self.base_station.D_size = float(self.msg[3])
             self.base_station.C_size = float(self.msg[4])
             self.base_station.Tn = float(self.msg[5])
@@ -78,7 +80,7 @@ class VECEnv(gym.Env):
             self.start_time = time()
 
         # self.observation = np.hstack([self.base_station.Fs,self.base_station.snr,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.t_delay])
-        self.observation = np.concatenate([self.base_station.Fs,self.base_station.snr,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.t_delay])
+        self.observation = np.concatenate([self.base_station.Fs,self.base_station.snr,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.Tn])
         self.done = False
         print("iteration times:",self.iteration)
         self.step_num = 0
@@ -91,13 +93,13 @@ class VECEnv(gym.Env):
         @param action: take action selected by agent(range from[0,num of base station],Sbk)
         @return: tuple of (observation, reward, done, info)
         '''
-        #update the state of chosen base station
+        # update the state of chosen base station
         # self.base_station.update_reliability(action[0])
 
-        '''
-        Real traing. Get task vehicle ID and event ID from UDP message.
-        '''
         if self.udp_status == 1:
+            '''
+            Real traing. Get task vehicle ID and event ID from UDP message.
+            '''
             vehicle_ID = self.msg[1]
             event_ID = self.msg[2]
             
@@ -105,49 +107,48 @@ class VECEnv(gym.Env):
             SAC_time = self.end_time - self.start_time
             
             # Return the action to the task vehicle.
-            action_msg = struct.pack("!i20s20s",2,"offloading",str(action))
+            action_msg = struct.pack("!i10s10s",2,"offloading",str(action))
             udp_request.send(action_msg, self.addr)
-            
+            # Vehicle will return a "complete" packet
             self.msg, self.addr = udp_request.receive()
             if self.msg[0] != "complete":
                 print("Complete packet error, error head: ",self.msg[0])
                 exit(1)
             t2 = self.msg[2]
-
             tde = self.base_station.get_t_delay(action,vehicle_ID,event_ID,t2,mydb)
+            density = self.base_station.get_density(event_ID, mydb)
+            if tde > self.base_station.Tn:
+                complete_status = '0'
+            else:
+                complete_status = '1'
+            com_task = Task('1',vehicle_ID,str(action),self.bs_ID,complete_status,density,SAC_time)
+            self.po.apply_async(TaskSQLUtil.insert,(com_task,))
+            # TaskSQLUtil.insert(com_task)
         else:
             '''
             Pre-training 200 times
             '''
-            tv_id = random.choice([0,1,2,3,4])
-            
+            vehicle_ID = random.randint(0,3)
+            event_ID = random.randint(1,14)
+            tde = self.base_station.pre_training(action,vehicle_ID,event_ID,mydb)
 
+            
         self.base_station.get_utility(action,tde)
         self.base_station.get_Utility_task(action)
         self.base_station.get_normalized_utility(action)
         self.base_station.update_completion_ratio(action)
         self.base_station.update_compute_efficiency(action)
-        self.base_station.update_reliability(action)
-        density = self.base_station.get_density(event_ID, mydb)
-        
-        if tde > self.base_station.Tn:
-            complete_status = '0'
-        else:
-            complete_status = '1'
-        com_task = Task('1',vehicle_ID,str(action),self.bs_ID,complete_status,density,SAC_time)
-        self.po.apply_async(TaskSQLUtil.insert,(com_task,))
-
-        # TaskSQLUtil.insert(com_task)
+        self.base_station.update_reliability(action) 
 
         self.step_num+=1
         self.iteration += 1
 
         reward=self.base_station.get_reward(action)
-        if self.step_num>100:
+        if self.step_num>self.train_step:
             self.done = True
-        self.observation = np.concatenate([self.base_station.Fs,self.base_station.snr,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.t_delay])
+        self.observation = np.concatenate([self.base_station.Fs,self.base_station.snr,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.Tn])
         
-        if self.done == True:
+        if self.done == True and self.udp_status == 1:
             for i in range(self.s):
                 sql1 = "UPDATE dataupload SET completion_ratio = %s WHERE vehicleID = %s"
                 input_data1 = (self.base_station.completion_ratio[i], i)
