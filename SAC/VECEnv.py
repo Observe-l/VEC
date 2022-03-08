@@ -79,8 +79,11 @@ class VECEnv(gym.Env):
             self.base_station.Tn = float(self.msg[5]) * np.ones(self.s)
             # Time stamp - when receive the udp request
             self.start_time = time()
+        else:
+            vehicle_ID = random.randint(0,3)
+            event_ID = random.randint(1,14)
+            self.msg = [vehicle_ID, event_ID]
 
-        # self.observation = np.hstack([self.base_station.Fs,self.base_station.snr,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.t_delay])
         self.observation = np.concatenate([self.base_station.Fs,self.base_station.snr,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.Tn])
         self.done = False
         
@@ -129,8 +132,8 @@ class VECEnv(gym.Env):
             '''
             Pre-training 200 times
             '''
-            vehicle_ID = random.randint(0,3)
-            event_ID = random.randint(1,14)
+            vehicle_ID = self.msg[0]
+            event_ID = self.msg[1]
             tde = self.base_station.pre_training(action,str(vehicle_ID),str(event_ID),mydb)
 
             
@@ -154,11 +157,9 @@ class VECEnv(gym.Env):
                 sql1 = "UPDATE dataupload SET completion_ratio = %s, reliability = %s WHERE vehicleID = %s"
                 input_data1 = (self.base_station.completion_ratio[i],self.base_station.reliability[i], i)
                 mycursor.execute(sql1, input_data1)
-                sql2 = "UPDATE dataupload SET reliability = %s WHERE vehicleID = %s"
-                input_data2 = (self.base_station.reliability[i], i)
-                mycursor.execute(sql2, input_data2)
-                print("update to vehilce:",i)
-                print("rebiability is:",self.base_station.reliability)
+                # sql2 = "UPDATE dataupload SET reliability = %s WHERE vehicleID = %s"
+                # input_data2 = (self.base_station.reliability[i], i)
+                # mycursor.execute(sql2, input_data2)
 
         print("Action is", action)
         return self.observation,reward,self.done,{}
