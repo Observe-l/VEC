@@ -85,7 +85,7 @@ if __name__ == "__main__":
         fn = float(Cn[n])/total_time
 
         # Send complete packet to SAC
-        complete_msg = struct.pack('!i10s10s10s10s',b'complete',tv_id.encode(),str(total_time).encode(),b"successful")
+        complete_msg = struct.pack('!i10s10s10s10s',4,b'complete',tv_id.encode(),str(total_time).encode(),b"successful")
         udp_request.send(complete_msg,Station_IP)
         if event < 14:
             event += 1

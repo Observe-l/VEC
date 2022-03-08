@@ -55,12 +55,12 @@ class VECEnv(gym.Env):
         reset the state of the environment
         @return: state
         '''
-
+        print("iteration times:",self.iteration)
         '''
         Receive request from Raspberry.#reset = #step + 1
         Pre-training 200 times
         '''
-        if self.iteration > 200:
+        if self.iteration > 500:
             self.udp_status = 1
             self.train_step = 0
             mydb.commit
@@ -73,17 +73,17 @@ class VECEnv(gym.Env):
                 exit(1)
 
             #Update the state space
-            self.base_station.D_size = float(self.msg[3])
-            self.base_station.C_size = float(self.msg[4])
-            self.base_station.Tn = float(self.msg[5])
+            self.base_station.D_size = float(self.msg[3]) * np.ones(self.s)
+            self.base_station.C_size = float(self.msg[4]) * np.ones(self.s)
+            self.base_station.Tn = float(self.msg[5]) * np.ones(self.s)
             # Time stamp - when receive the udp request
             self.start_time = time()
 
         # self.observation = np.hstack([self.base_station.Fs,self.base_station.snr,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.t_delay])
         self.observation = np.concatenate([self.base_station.Fs,self.base_station.snr,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.Tn])
         self.done = False
-        print("iteration times:",self.iteration)
-        self.step_num = 0
+        
+        self.step_num = 1
 
         return self.observation
 
@@ -107,7 +107,7 @@ class VECEnv(gym.Env):
             SAC_time = self.end_time - self.start_time
             
             # Return the action to the task vehicle.
-            action_msg = struct.pack("!i10s10s",2,"offloading",str(action))
+            action_msg = struct.pack("!i10s10s",2,b"offloading",str(action).encode())
             udp_request.send(action_msg, self.addr)
             # Vehicle will return a "complete" packet
             self.msg, self.addr = udp_request.receive()
@@ -117,7 +117,7 @@ class VECEnv(gym.Env):
             t2 = self.msg[2]
             tde = self.base_station.get_t_delay(action,vehicle_ID,event_ID,t2,mydb)
             density = self.base_station.get_density(event_ID, mydb)
-            if tde > self.base_station.Tn:
+            if tde > self.base_station.Tn[action]:
                 complete_status = '0'
             else:
                 complete_status = '1'
@@ -130,7 +130,7 @@ class VECEnv(gym.Env):
             '''
             vehicle_ID = random.randint(0,3)
             event_ID = random.randint(1,14)
-            tde = self.base_station.pre_training(action,vehicle_ID,event_ID,mydb)
+            tde = self.base_station.pre_training(action,str(vehicle_ID),str(event_ID),mydb)
 
             
         self.base_station.get_utility(action,tde)
@@ -157,6 +157,7 @@ class VECEnv(gym.Env):
                 input_data2 = (self.base_station.reliability[i], i)
                 mycursor.execute(sql2, input_data2)
 
+        print("Action is", action)
         return self.observation,reward,self.done,{}
 
 

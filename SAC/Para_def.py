@@ -26,10 +26,10 @@ class SACEnv:
         self.s = s
         self.t = 1
         self.u = 0.1
-        self.D_size = 3.5
-        self.C_size = 3.2
+        self.D_size = 3.5 * np.ones(s)
+        self.C_size = 3.2 * np.ones(s)
         self.lam = -10
-        self.Tn = 2
+        self.Tn = 10 * np.ones(s)
         self.pn = 0.1
         # self.Vehicle_density = self.get_vehicle_density()
         self.t_delay = np.zeros(s)
@@ -78,12 +78,16 @@ class SACEnv:
         # return np.array([a1, b1, c1])
         # return np.random.uniform(1, 13, (self.s,))
         # tdelay = np.zeros(4)
-        sv = Vs
-        vehicle = "vehicle" + str(sv)
-        table = "ts_vehicle" + task_ID
-        delaycmd = "select " + vehicle + " from " + table + " WHERE EVENT = " + event_ID
-        transmission = np.float32(pd.read_sql(delaycmd, mydb))
-        tde = self.D_size/transmission + float(t2)
+        sv = str(Vs)
+        if sv == task_ID:
+            tde = float(t2)
+        else:
+            vehicle = "vehicle" + str(Vs)
+            table = "ts_vehicle" + task_ID
+            delaycmd = "select " + vehicle + " from " + table + " WHERE EVENT = " + event_ID
+            transmission = np.float32(pd.read_sql(delaycmd, mydb))
+            tde = self.D_size[Vs]/transmission + float(t2)
+            
         self.t_delay[Vs] = tde
         # tde = np.array(tdelay)
         # tde1 = np.float32(tde)
@@ -92,12 +96,16 @@ class SACEnv:
     
     # Before receive real data from RPi, use some random data traing 200 times
     def pre_training(self, Vs:int, task_ID:str, event_ID:str, mydb):
-        Vs
-        vehicle = "vehicle" + str(Vs)
-        table = "ts_vehicle" + task_ID
-        delaycmd = "select " + vehicle + " from " + table + " WHERE EVENT = " + event_ID
-        transmission = np.float32(pd.read_sql(delaycmd, mydb))
-        tde = self.D_size/transmission + self.C_size/self.Fs[Vs]
+        sv = str(Vs)
+        if sv == task_ID:
+            tde = self.C_size[Vs]/self.Fs[Vs]
+        else:
+            vehicle = "vehicle" + str(Vs)
+            table = "ts_vehicle" + task_ID
+            delaycmd = "select " + vehicle + " from " + table + " WHERE EVENT = " + event_ID
+            transmission = np.float32(pd.read_sql(delaycmd, mydb))
+            tde = self.D_size[Vs]/transmission + self.C_size[Vs]/self.Fs[Vs]
+
         self.t_delay[Vs] = tde
         return tde
 
@@ -107,7 +115,7 @@ class SACEnv:
 
         # self.t_delay = self.get_t_delay(Vs)
         # difference = self.Tn - self.t_delay[Vs]
-        difference = self.Tn - tde
+        difference = self.Tn[Vs] - tde
         if difference<=0:
             self.utility[Vs] = self.lam
         else:
@@ -118,12 +126,12 @@ class SACEnv:
     #     return np.random.uniform(5, 40)
 
     def get_Utility_task(self,Vs):
-        self.Utility_task[Vs] = self.utility[Vs] - self.pn * self.C_size
+        self.Utility_task[Vs] = self.utility[Vs] - self.pn * self.C_size[Vs]
         return self.Utility_task[Vs]
 
     def get_normalized_utility(self,Vs):
-        if self.Tn > self.t_delay[Vs]:
-            self.normalized_utility[Vs] = np.log(1 + self.Tn-self.t_delay[Vs])/np.log(1 + self.Tn)
+        if self.Tn[Vs] > self.t_delay[Vs]:
+            self.normalized_utility[Vs] = np.log(1 + self.Tn[Vs]-self.t_delay[Vs])/np.log(1 + self.Tn[Vs])
         else:
             self.normalized_utility[Vs] = 0
         return self.normalized_utility
@@ -137,7 +145,7 @@ class SACEnv:
         return
 
     def update_completion_ratio(self,Vs):
-        one = 1 if self.t_delay[Vs]<self.Tn else 0
+        one = 1 if self.t_delay[Vs]<self.Tn[Vs] else 0
         self.total_received_task[Vs] += 1
         self.completion_ratio[Vs] = ((self.total_received_task[Vs])*self.completion_ratio[Vs]+one)/self.total_received_task[Vs]
         return
