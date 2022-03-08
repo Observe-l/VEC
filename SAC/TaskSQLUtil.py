@@ -21,3 +21,17 @@ def insert(task:Task):
   # 关闭数据库连接
   conn.close()
   return
+
+
+def deleteAllTasks():
+  # conn = pymysql.connect(host='34.92.132.215', user='ray', passwd='Ray@123456', database='basestation')
+  conn = pymysql.connect(host='localhost', user='VEC', passwd='666888', database='DDQN')
+  # conn = pymysql.connect(host='localhost', user='database', passwd='123456', database='basestation')
+
+  c = conn.cursor()
+  command = "DELETE from TASK"
+  c.execute(command)
+  conn.commit()
+  conn.close()
+  # print("delete the table data")
+  return

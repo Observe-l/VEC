@@ -40,12 +40,13 @@ class VECEnv(gym.Env):
         self.observation_space = gym.spaces.box.Box(observation_array_min, observation_array_max, dtype=np.float32)
         self.base_station = SACEnv(self.s)
         # base station ID
-        self.bs_ID = '2'
+        self.bs_ID = '1'
 
         # iteration
         self.iteration = 0
         self.udp_status = 0
         self.train_step = 100
+        TaskSQLUtil.deleteAllTasks()
         # self.reset()
 
     def reset(self):
@@ -58,7 +59,7 @@ class VECEnv(gym.Env):
         Receive request from Raspberry.#reset = #step + 1
         Pre-training 200 times
         '''
-        if self.iteration > 500:
+        if self.iteration > 2499:
             self.udp_status = 1
             self.train_step = 0
             start = time()
@@ -112,7 +113,12 @@ class VECEnv(gym.Env):
             
             # Return the action to the task vehicle.
             action_msg = struct.pack("!i10s10s",2,b"offloading",str(action).encode())
-            udp_request.send(action_msg, self.addr)
+            status = udp_request.send(action_msg, self.addr)
+            if status == False:
+                print("Action send error")
+                reward = 0
+                self.done =True
+                return self.observation,reward,self.done,{}
             # Vehicle will return a "complete" packet
             self.msg, self.addr = udp_request.receive()
             if self.msg[0] != "complete":

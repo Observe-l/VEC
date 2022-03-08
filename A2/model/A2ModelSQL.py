@@ -120,11 +120,9 @@ class A2EnvExtreme:
         for task in tasks:
             Ib = int(task.allocation_basestation_id)-1
             #update state 1
-            #TODO:get the computing resource
-            # get the real-time vehicle desnsity from sumo
             for i in range(self.b):
                 self.baseStations[i].vehicle_density = task.vehicle_density[str(i+1)]
-                print(self.baseStations[i].vehicle_density)
+                print("task"+str(task.id)+"vehicle density near BS"+str(i)+":"+str(self.baseStations[i].vehicle_density))
             self.Gb = self.get_Gb()  # state1 global resource
             
             #update state 2

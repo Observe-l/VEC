@@ -114,18 +114,52 @@ def countAll():
     # print("select data successfully")
     return count
 
+def getFirstId():
+    conn = pymysql.connect(host='localhost', user='VEC', passwd='666888', database='DDQN')
+    # conn = pymysql.connect(host='localhost', user='database', passwd='123456', database='basestation')
+
+    c = conn.cursor()
+    command = "SELECT id FROM TASK limit 1;"
+    data = pd.read_sql(command, conn)
+    if data.shape[0]==0:
+        return 0
+    id = data.iloc[0,0]
+    conn.close()
+    # print("select data successfully")
+    return id
+
+def getLastId():
+    conn = pymysql.connect(host='localhost', user='VEC', passwd='666888', database='DDQN')
+    # conn = pymysql.connect(host='localhost', user='database', passwd='123456', database='basestation')
+
+    c = conn.cursor()
+    command = "SELECT id FROM TASK ORDER BY id DESC LIMIT 1;"
+    data = pd.read_sql(command, conn)
+    if data.shape[0]==0:
+        return 0
+    id = data.iloc[0, 0]
+    conn.close()
+    # print("select data successfully")
+    return id
+
+def deleteAllTasks():
+    # conn = pymysql.connect(host='34.92.132.215', user='ray', passwd='Ray@123456', database='basestation')
+    conn = pymysql.connect(host='localhost', user='VEC', passwd='666888', database='DDQN')
+    # conn = pymysql.connect(host='localhost', user='database', passwd='123456', database='basestation')
+
+    c = conn.cursor()
+    command = "DELETE from TASK"
+    c.execute(command)
+    conn.commit()
+    conn.close()
+    # print("delete the table data")
+    return
+
 
 if __name__ == '__main__':
     # createDB()
-    task = Task()
-    task.allocation_basestation_id=1
-    task.done_status=1
-    task.id=4
-    task.delay = 3.2
-    task.offload_vehicle_id=1
-    task.service_vehicle_id=2
-    task.vehicle_density = {'1':4,'2':24}    #base station id is from 1
-    insert(task)
+    ID=getFirstId()
+    print(ID)
     # task1 = selectLatest(1)
     # print(task1[0].vehicle_density[str(1)])
     # a = np.array([task1[0].vehicle_density[str(i+1)] for i in range(2)])
