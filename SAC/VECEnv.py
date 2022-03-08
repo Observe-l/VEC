@@ -1,6 +1,5 @@
 import random
 import struct
-import multiprocessing
 import gym
 import gym.spaces
 import numpy as np
@@ -13,7 +12,7 @@ import TaskSQLUtil as TaskSQLUtil
 from Task import Task
 
 mydb = pymysql.connect(
-  host="localhost",
+  host="192.168.1.117",
   user="VEC",
   password="666888",
   database="SAC"
@@ -41,8 +40,7 @@ class VECEnv(gym.Env):
         self.observation_space = gym.spaces.box.Box(observation_array_min, observation_array_max, dtype=np.float32)
         self.base_station = SACEnv(self.s)
         # base station ID
-        self.bs_ID = '1'
-        self.po = multiprocessing.Pool(processes=4)
+        self.bs_ID = '2'
 
         # iteration
         self.iteration = 0
@@ -60,10 +58,13 @@ class VECEnv(gym.Env):
         Receive request from Raspberry.#reset = #step + 1
         Pre-training 200 times
         '''
-        if self.iteration > 500:
+        if self.iteration > 2500:
             self.udp_status = 1
             self.train_step = 0
+            start = time()
             mydb.commit
+            end = time()
+            print("commit time: ",end-start)
             self.msg, self.addr = udp_request.receive()
             '''
             Request head should be "request". Otherwise, program will exit and print error head packet.
@@ -122,7 +123,7 @@ class VECEnv(gym.Env):
             else:
                 complete_status = '1'
             com_task = Task('1',vehicle_ID,str(action),self.bs_ID,complete_status,density,SAC_time)
-            self.po.apply_async(TaskSQLUtil.insert,(com_task,))
+            TaskSQLUtil.insert(com_task)
             # TaskSQLUtil.insert(com_task)
         else:
             '''

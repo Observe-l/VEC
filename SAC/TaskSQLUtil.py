@@ -3,7 +3,7 @@ import pymysql
 import json
 
 def insert(task:Task):
-    conn = pymysql.connect(host='localhost', user='VEC', passwd='666888', database='DDQN')
+    conn = pymysql.connect(host='192.168.1.117', user='VEC', passwd='666888', database='DDQN')
     # conn = pymysql.connect(host='localhost', user='database', passwd='123456', database='basestation')
     cursor = conn.cursor()
 
