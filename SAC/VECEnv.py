@@ -40,7 +40,11 @@ class VECEnv(gym.Env):
         self.observation_space = gym.spaces.box.Box(observation_array_min, observation_array_max, dtype=np.float32)
         self.base_station = SACEnv(self.s)
         # base station ID
+<<<<<<< HEAD
         self.bs_ID = '2'
+=======
+        self.bs_ID = '1'
+>>>>>>> backup
 
         # iteration
         self.iteration = 0
