@@ -1,0 +1,47 @@
+https://docs.docker.com/engine/install/ubuntu/#uninstall-old-versions  --- docker install on ubuntu -- successful
+
+
+https://sawtooth.hyperledger.org/docs/pbft/nightly/master/installing-and-running-pbft.html --- sawtooth pbft setup and install
+
+https://sawtooth.hyperledger.org/docs/core/releases/latest/app_developers_guide/docker_test_network.html --- creation of test network
+
+https://www.digitalocean.com/community/tutorials/how-to-install-anaconda-on-ubuntu-18-04-quickstart
+
+https://www.rosehosting.com/blog/how-to-install-python-3-6-on-ubuntu-16-04/   ------python install on ubuntu
+https://learnthings.online/course/2020/03/06/hyperledger-sawtooth-for-application-developers ----- one small application example
+
+https://stackoverflow.com/questions/41986507/unable-to-set-default-python-version-to-python3-in-ubuntu ----- python version change
+
+commands:
+
+sudo docker ps
+shell sudo docker exec -it 8cff8a70e716 sh
+docker-compose:  sudo docker-compose -f [file name] up --force
+/usr/local/bin/docker-compose
+
+
+https://github.com/n-riesco/ijavascript/issues/124 ------ npm installation issue 
+
+
+https://github.com/askmish/sawtooth-simplewallet/blob/317738c88e6ec8711cdefaa6130e8af2989fda8e/pyclient/wallet/simplewallet_client.py
+
+
+for ubuntu xenial version
+sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 8AA7AF1F1091A5FD
+sudo add-apt-repository 'deb http://repo.sawtooth.me/ubuntu/1.0/stable xenial universe'
+
+https://github.com/askmish/sawtooth-simplewallet/tree/317738c88e6ec8711cdefaa6130e8af2989fda8e ---simple wallet
+
+
+flask error:
+https://itsfoss.com/could-not-get-lock-error/
+
+scp -i marunava21.pem ubuntu@ec2-18-234-82-234.compute-1.amazonaws.com:./Sawtooth_blockchain/my_sawtooth/pyclient/random.txt ./ ----access Ec2 files
+
+ssh -i "marunava21.pem" ubuntu@ec2-54-89-171-241.compute-1.amazonaws.com
+
+
+sudo -u sawtooth sawtooth-validator -vv
+sudo -u sawtooth sawtooth-rest-api -vvv
+sudo -u sawtooth settings-tp -vv
+
