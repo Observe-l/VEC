@@ -79,7 +79,13 @@ if __name__ == "__main__":
         #     udp_request.udp_send(req,tv_id,str(event),Dn[n],Station_IP)
         #     msg,addr =  udp_request.udp_server()
         requset_msg = struct.pack("!i10s10s10s10s10s10s",6,b"request",tv_id.encode(),str(event).encode(),Dn[n].encode(),Cn[n].encode(),tau_n[n].encode())
-        udp_request.send(requset_msg,Station_IP[bs_id])
+        status = udp_request.send(requset_msg,Station_IP[bs_id])
+        
+        if status == False:
+            print("Send request fail")
+            time.sleep(1)
+            continue
+    
         print("sent request to:",Station_IP[bs_id])
         msg, addr = udp_request.receive()
         print("get return")
@@ -119,4 +125,4 @@ if __name__ == "__main__":
             print("Completed all of the events")
         print("#",n," task is completed by: ",vid)
         print("Total time: ",total_time)
-        time.sleep(0.2)
+        time.sleep(1)
