@@ -1,11 +1,11 @@
 import docker
 import csv
-client = docker.APIClient(base_url='tcp://localhost:2375')
-cmd = "sawtooth keygen bs1 --force"
+client = docker.APIClient(base_url='unix:///var/run/docker.sock')
+# cmd = "sawtooth keygen bs1 --force"
 # id1=client.exec_create('simplewallet-client-1',cmd)
 # output=client.exec_start(id1).decode().strip()
 # print(output)
-cmd = "simplewallet deposit '100 20 30 40 60 90' bs1"
+cmd = "simplewallet deposit '140 20 30 40 60 80' bs1"
 id1=client.exec_create('simplewallet-client-1',cmd)
 client.exec_start(id1)
 cmd = "simplewallet balance bs1"

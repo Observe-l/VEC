@@ -10,7 +10,7 @@ def update(bs: BaseStation):
                 +"-n a2c --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/gcp.com/msp/tlscacerts/tlsca.gcp.com-cert.pem " \
                 +"-c '{\"Args\":[\"set\",\"" + str(bs.id) + "\","\
                     + "\"" + str(bs.global_computing_resource) + "\","\
-                    + "\"" + str(bs.reversed_computing_resource) + "\","\
+                    + "\"" + str(bs.reserved_computing_resource) + "\","\
                     + "\"" + str(bs.computing_efficiency) + "\","\
                     + "\"" + str(bs.completion_ratio) + "\","\
                     + "\"" + str(bs.total_received_task) + "\","\
@@ -38,7 +38,7 @@ def getByID(id: str):
     bs = BaseStation()
     bs.id = js_data['id']
     bs.global_computing_resource = float(js_data['global_computing_resource'])
-    bs.reversed_computing_resource = float(js_data['reversed_computing_resource'])
+    bs.reserved_computing_resource = float(js_data['reserved_computing_resource'])
     bs.computing_efficiency = float(js_data['computing_efficiency'])
     bs.completion_ratio = float(js_data['completion_ratio'])
     bs.total_received_task = float(js_data['total_received_task'])
@@ -70,7 +70,7 @@ def mul_getByID(id: list):
     for i in range(length):
         bs[i].id = js_data[i]['Record']['id']
         bs[i].global_computing_resource = float(js_data[i]['Record']['global_computing_resource'])
-        bs[i].reversed_computing_resource = float(js_data[i]['Record']['reversed_computing_resource'])
+        bs[i].reserved_computing_resource = float(js_data[i]['Record']['reserved_computing_resource'])
         bs[i].computing_efficiency = float(js_data[i]['Record']['computing_efficiency'])
         bs[i].completion_ratio = float(js_data[i]['Record']['completion_ratio'])
         bs[i].total_received_task = float(js_data[i]['Record']['total_received_task'])
@@ -101,7 +101,7 @@ if __name__ == '__main__':
     bs2 = BaseStation()
     bs2.id = 'bs-3'
     bs2.global_computing_resource = 10.2
-    bs2.reversed_computing_resource = 3.5
+    bs2.reserved_computing_resource = 3.5
     bs2.computing_efficiency = 0
     bs2.completion_ratio = 0
     bs2.total_received_task = 0
@@ -111,4 +111,4 @@ if __name__ == '__main__':
 
     # Get by ID
     # bs3 = getByID('bs-3')
-    # print(bs3.reversed_computing_resource)
+    # print(bs3.reserved_computing_resource)
