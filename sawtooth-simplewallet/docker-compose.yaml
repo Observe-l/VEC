@@ -1,19 +1,7 @@
-# Copyright 2019 Cargill Incorporated
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 version: '2.1'
-
+# networks:
+  # sawtooth_network:
+    # driver: overlay
 volumes:
   pbft-shared:
 
@@ -29,7 +17,8 @@ services:
         - no_proxy
     depends_on:
       - validator-0
-
+    # networks:
+      # - sawtooth_network
     volumes:
       - '.:/project/simplewallet/'
   simplewallet-processor-1:
@@ -43,47 +32,11 @@ services:
         - no_proxy
     depends_on:
       - validator-1
+    # networks:
+      # - sawtooth_network
     volumes:
       - '.:/project/simplewallet/'
-  simplewallet-processor-2:
-    container_name: simplewallet-processor-2
-    build:
-      context: .
-      dockerfile: ./pyprocessor2/Dockerfile
-      args:
-        - http_proxy
-        - https_proxy
-        - no_proxy
-    depends_on:
-      - validator-2
-    volumes:
-      - '.:/project/simplewallet/'
-  simplewallet-processor-3:
-    container_name: simplewallet-processor-3
-    build:
-      context: .
-      dockerfile: ./pyprocessor3/Dockerfile
-      args:
-        - http_proxy
-        - https_proxy
-        - no_proxy
-    depends_on:
-      - validator-3
-    volumes:
-      - '.:/project/simplewallet/'
-  simplewallet-processor-4:
-    container_name: simplewallet-processor-4
-    build:
-      context: .
-      dockerfile: ./pyprocessor4/Dockerfile
-      args:
-        - http_proxy
-        - https_proxy
-        - no_proxy
-    depends_on:
-      - validator-4
-    volumes:
-      - '.:/project/simplewallet/'
+#------- client----------------------------------
   simplewallet-client-0:
     container_name: simplewallet-client-0
     build:
@@ -126,75 +79,10 @@ services:
       - '0.0.0.0:3001:3001'
     depends_on:
       - rest-api-1
+    # networks:
+      # - sawtooth_network
     entrypoint: "bash -c \"sawtooth keygen --force sawtooth && tail -f /dev/null\""
     stop_signal: SIGKILL
-  simplewallet-client-2:
-    container_name: simplewallet-client-2
-    build:
-      context: .
-      dockerfile: ./pyclient2/Dockerfile
-      args:
-        - http_proxy
-        - https_proxy
-        - no_proxy
-    environment:
-      - 'http_proxy=${http_proxy}'
-      - 'https_proxy=${https_proxy}'
-      - 'no_proxy=rest-api-2,validator-2,${no_proxy}'
-    volumes:
-      - '.:/project/simplewallet/'
-      - './keys/:/root/.sawtooth/keys/'
-    ports:
-      - '0.0.0.0:3002:3002'
-    depends_on:
-      - rest-api-2
-    entrypoint: "bash -c \"sawtooth keygen --force sawtooth && tail -f /dev/null\""
-    stop_signal: SIGKILL
-  simplewallet-client-3:
-    container_name: simplewallet-client-3
-    build:
-      context: .
-      dockerfile: ./pyclient3/Dockerfile
-      args:
-        - http_proxy
-        - https_proxy
-        - no_proxy
-    environment:
-      - 'http_proxy=${http_proxy}'
-      - 'https_proxy=${https_proxy}'
-      - 'no_proxy=rest-api-3,validator-3,${no_proxy}'
-    volumes:
-      - '.:/project/simplewallet/'
-      - './keys/:/root/.sawtooth/keys/'
-    ports:
-      - '0.0.0.0:3003:3003'
-    depends_on:
-      - rest-api-3
-    entrypoint: "bash -c \"sawtooth keygen --force sawtooth && tail -f /dev/null\""
-    stop_signal: SIGKILL
-  simplewallet-client-4:
-    container_name: simplewallet-client-4
-    build:
-      context: .
-      dockerfile: ./pyclient4/Dockerfile
-      args:
-        - http_proxy
-        - https_proxy
-        - no_proxy
-    environment:
-      - 'http_proxy=${http_proxy}'
-      - 'https_proxy=${https_proxy}'
-      - 'no_proxy=rest-api-4,validator-4,${no_proxy}'
-    volumes:
-      - '.:/project/simplewallet/'
-      - './keys/:/root/.sawtooth/keys/'
-    ports:
-      - '0.0.0.0:3004:3004'
-    depends_on:
-      - rest-api-4
-    entrypoint: "bash -c \"sawtooth keygen --force sawtooth && tail -f /dev/null\""
-    stop_signal: SIGKILL
-
 
 # -------------=== rest api ===-------------
 
@@ -203,6 +91,7 @@ services:
     image: hyperledger/sawtooth-rest-api:1.0
     expose:
       - 8008
+      - 4004
     ports:
       - '8008:8008'
     depends_on:
@@ -214,8 +103,12 @@ services:
   settings-tp-0:
     container_name: settings-tp-0
     image: hyperledger/sawtooth-settings-tp:1.0
+    expose:
+      - 4004
     depends_on:
       - validator-0
+    # networks:
+      # - sawtooth_network
     command: settings-tp -vv --connect tcp://validator-0:4004
 
   rest-api-1:
@@ -223,10 +116,13 @@ services:
     image: hyperledger/sawtooth-rest-api:1.0
     expose:
       - 8009
+      - 4005
     ports:
-      - '8009:8009'
+      - "8009:8009"
     depends_on:
       - validator-1
+    # networks:
+      # - sawtooth_network
     entrypoint: |
       sawtooth-rest-api -vvv
         --connect tcp://validator-1:4005
@@ -234,66 +130,13 @@ services:
   settings-tp-1:
     container_name: settings-tp-1
     image: hyperledger/sawtooth-settings-tp:1.0
+    expose:
+     - 4005
     depends_on:
       - validator-1
+    # networks:
+      # - sawtooth_network
     command: settings-tp -vv --connect tcp://validator-1:4005
-  rest-api-2:
-    container_name: rest-api-2
-    image: hyperledger/sawtooth-rest-api:1.0
-    expose:
-      - 8010
-    ports:
-      - '8010:8010'
-    depends_on:
-      - validator-2
-    entrypoint: |
-      sawtooth-rest-api -vvv
-        --connect tcp://validator-2:4006
-        --bind rest-api-2:8010
-  settings-tp-2:
-    container_name: settings-tp-2
-    image: hyperledger/sawtooth-settings-tp:1.0
-    depends_on:
-      - validator-2
-    command: settings-tp -vv --connect tcp://validator-2:4006
-  rest-api-3:
-    container_name: rest-api-3
-    image: hyperledger/sawtooth-rest-api:1.0
-    expose:
-      - 8011
-    ports:
-      - '8011:8011'
-    depends_on:
-      - validator-3
-    entrypoint: |
-      sawtooth-rest-api -vvv
-        --connect tcp://validator-3:4007
-        --bind rest-api-3:8011
-  settings-tp-3:
-    container_name: settings-tp-3
-    image: hyperledger/sawtooth-settings-tp:1.0
-    depends_on:
-      - validator-3
-    command: settings-tp -vv --connect tcp://validator-3:4007
-  rest-api-4:
-    container_name: rest-api-4
-    image: hyperledger/sawtooth-rest-api:1.0
-    expose:
-      - 8012
-    ports:
-      - '8012:8012'
-    depends_on:
-      - validator-4
-    entrypoint: |
-      sawtooth-rest-api -vvv
-        --connect tcp://validator-4:4008
-        --bind rest-api-4:8012
-  settings-tp-4:
-    container_name: settings-tp-4
-    image: hyperledger/sawtooth-settings-tp:1.0
-    depends_on:
-      - validator-4
-    command: settings-tp -vv --connect tcp://validator-4:4008
 
 # -------------=== shell ===-------------
 
@@ -302,6 +145,11 @@ services:
     container_name: sawtooth-shell-default
     volumes:
       - pbft-shared:/pbft-shared
+    depends_on:
+      - rest-api-0
+      - rest-api-1
+    # networks:
+      # - sawtooth_network
     command: |
       bash -c "
         sawtooth keygen
@@ -319,11 +167,13 @@ services:
       - 5050
       - 8800
     ports:
-      - 4004:4004
-      - 5050:5050
-      - 8800:8800
+      - "4004:4004"
+      - "5050:5050"
+      - "8800:8800"
     volumes:
       - pbft-shared:/pbft-shared
+    # networks:
+      # - sawtooth_network
     command: |
       bash -c "
         if [ -e /pbft-shared/validators/validator-0.priv ]; then
@@ -366,6 +216,7 @@ services:
           --bind network:tcp://eth0:8800 \
           --scheduler parallel \
           --peering dynamic\
+          --minimum-peer-connectivity 1 \
           --maximum-peer-connectivity 10000 \
           --network-auth trust 
       "
@@ -373,13 +224,22 @@ services:
     image: hyperledger/sawtooth-validator:1.0
     container_name: sawtooth-validator-default-1
     expose:
+      - 4004
+      - 8800
       - 4005
       - 5050
+      - 5051
       - 8801
     ports:
-      - 4005:4005
+      - "4005:4005"
+      - "8801:8801"
+      - "5051:5051"
     volumes:
       - pbft-shared:/pbft-shared
+    depends_on:
+      - validator-0
+    # networks:
+      # - sawtooth_network
     command: |
       bash -c "
         if [ -e /pbft-shared/validators/validator-1.priv ]; then
@@ -400,149 +260,34 @@ services:
           --bind network:tcp://eth0:8801 \
           --scheduler parallel \
           --peering dynamic\
+          --minimum-peer-connectivity 1 \
           --maximum-peer-connectivity 10000 \
           --seeds tcp://validator-0:8800 \
           --network-auth trust 
       "
-  validator-2:
-    image: hyperledger/sawtooth-validator:1.0
-    container_name: sawtooth-validator-default-2
-    expose:
-      - 4006
-      - 5050
-      - 8802
-    ports:
-      - 4006:4006
-    volumes:
-      - pbft-shared:/pbft-shared
-    command: |
-      bash -c "
-        if [ -e /pbft-shared/validators/validator-2.priv ]; then
-          cp /pbft-shared/validators/validator-2.pub /etc/sawtooth/keys/validator.pub
-          cp /pbft-shared/validators/validator-2.priv /etc/sawtooth/keys/validator.priv
-        fi &&
-        if [ ! -e /etc/sawtooth/keys/validator.priv ]; then
-          sawadm keygen
-          mkdir -p /pbft-shared/validators || true
-          cp /etc/sawtooth/keys/validator.pub /pbft-shared/validators/validator-2.pub
-          cp /etc/sawtooth/keys/validator.priv /pbft-shared/validators/validator-2.priv
-        fi &&
-        sawtooth keygen my_key &&
-        sawtooth-validator -vv \
-          --endpoint tcp://validator-2:8802 \
-          --bind component:tcp://eth0:4006 \
-          --bind consensus:tcp://eth0:5052 \
-          --bind network:tcp://eth0:8802 \
-          --scheduler parallel \
-          --peering dynamic\
-          --maximum-peer-connectivity 10000 \
-          --seeds tcp://validator-0:8800 \
-          --peers tcp://validator-1:8801 \
-          --network-auth trust 
-      "
-  validator-3:
-    image: hyperledger/sawtooth-validator:1.0
-    container_name: sawtooth-validator-default-3
-    expose:
-      - 4007
-      - 5050
-      - 8803
-    ports:
-      - 4007:4007
-    volumes:
-      - pbft-shared:/pbft-shared
-    command: |
-      bash -c "
-        if [ -e /pbft-shared/validators/validator-3.priv ]; then
-         cp /pbft-shared/validators/validator-3.pub /etc/sawtooth/keys/validator.pub
-         cp /pbft-shared/validators/validator-3.priv /etc/sawtooth/keys/validator.priv
-        fi &&
-        if [ ! -e /etc/sawtooth/keys/validator.priv ]; then
-         sawadm keygen
-         mkdir -p /pbft-shared/validators || true
-         cp /etc/sawtooth/keys/validator.pub /pbft-shared/validators/validator-3.pub
-         cp /etc/sawtooth/keys/validator.priv /pbft-shared/validators/validator-3.priv
-        fi &&
-        sawtooth keygen my_key &&
-        sawtooth-validator -vv \
-          --endpoint tcp://validator-3:8803 \
-          --bind component:tcp://eth0:4007 \
-          --bind consensus:tcp://eth0:5053 \
-          --bind network:tcp://eth0:8803 \
-          --scheduler parallel \
-          --peering dynamic \
-          --maximum-peer-connectivity 10000 \
-          --seeds tcp://validator-0:8800 \
-          --peers tcp://validator-1:8801 \
-          --peers tcp://validator-2:8802 \
-          --network-auth trust 
-      "
-  validator-4:
-    image: hyperledger/sawtooth-validator:1.0
-    container_name: sawtooth-validator-default-4
-    expose:
-      - 4008
-      - 5050
-      - 8804
-    ports:
-      - 4008:4008
-    volumes:
-      - pbft-shared:/pbft-shared
-    command: |
-      bash -c "
-        if [ -e /pbft-shared/validators/validator-4.priv ]; then
-          cp /pbft-shared/validators/validator-4.pub /etc/sawtooth/keys/validator.pub
-          cp /pbft-shared/validators/validator-4.priv /etc/sawtooth/keys/validator.priv
-        fi &&
-        if [ ! -e /etc/sawtooth/keys/validator.priv ]; then
-          sawadm keygen
-          mkdir -p /pbft-shared/validators || true
-          cp /etc/sawtooth/keys/validator.pub /pbft-shared/validators/validator-4.pub
-          cp /etc/sawtooth/keys/validator.priv /pbft-shared/validators/validator-4.priv
-        fi &&
-        sawtooth keygen my_key &&
-        sawtooth-validator -vv \
-          --endpoint tcp://validator-4:8804 \
-          --bind component:tcp://eth0:4008 \
-          --bind consensus:tcp://eth0:5054 \
-          --bind network:tcp://eth0:8804 \
-          --scheduler parallel \
-          --peering dynamic \
-          --maximum-peer-connectivity 10000 \
-          --seeds tcp://validator-0:8800 \
-          --peers tcp://validator-1:8801 \
-          --peers tcp://validator-2:8802 \
-          --peers tcp://validator-3:8803 \
-          --network-auth trust 
-      "
+
 # -------------=== pbft engines ===-------------
 
   pbft-0:
     image: hyperledger/sawtooth-pbft-engine:1.0
     container_name: sawtooth-pbft-engine-default-0
+    expose:
+      - 5050
+    depends_on:
+      - validator-0
+    # networks:
+      # - sawtooth_network
     command: pbft-engine -vv --connect tcp://validator-0:5050
     stop_signal: SIGKILL
 
   pbft-1:
    image: hyperledger/sawtooth-pbft-engine:1.0
    container_name: sawtooth-pbft-engine-default-1
+   expose:
+     - 5051
+   depends_on:
+     - validator-1
+   # networks:
+      # - sawtooth_network
    command: pbft-engine -vv --connect tcp://validator-1:5051
-   stop_signal: SIGKILL
-
-  pbft-2:
-   image: hyperledger/sawtooth-pbft-engine:1.0
-   container_name: sawtooth-pbft-engine-default-2
-   command: pbft-engine -vv --connect tcp://validator-2:5052
-   stop_signal: SIGKILL
-
-  pbft-3:
-   image: hyperledger/sawtooth-pbft-engine:1.0
-   container_name: sawtooth-pbft-engine-default-3
-   command: pbft-engine -vv --connect tcp://validator-3:5053
-   stop_signal: SIGKILL
-
-  pbft-4:
-   image: hyperledger/sawtooth-pbft-engine:1.0
-   container_name: sawtooth-pbft-engine-default-4
-   command: pbft-engine -vv --connect tcp://validator-4:5054
    stop_signal: SIGKILL
