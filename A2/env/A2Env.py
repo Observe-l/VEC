@@ -33,21 +33,6 @@ class A2Env(gym.Env):
         @return: state
         '''
         self.base_station = A2EnvExtreme()   #Load the data from the dataset
-        #wait for the sql to add data
-        while True:
-            time.sleep(2)
-            #count the total number of tasks
-            temp_task_id = getLastId()
-            print("(Reset)Current task num:",temp_task_id)
-            #load the number of tasks
-            # update the base station database if there exists update
-            if temp_task_id!=self.task_id:
-                diff = temp_task_id-self.task_id
-                print("(Reset)insert tasks num:", diff)
-                self.task_id=temp_task_id
-                self.base_station.updateBSByTasks(diff)
-                break
-
         self.observation = np.concatenate([self.base_station.Gb,self.base_station.reliability,self.base_station.Ntr])
         self.done = False
         self.step_num = 0
@@ -60,15 +45,28 @@ class A2Env(gym.Env):
         @return: tuple of (observation, reward, done, info)
         '''
         #print the base station chosen
-        print("(Step)In iteration"+str(self.iteration)+",the consensus node chosen is:",action)
-
+        reward = self.base_station.get_reward(action)
+        print("(Step)In iteration "+str(self.iteration)+", the consensus node chosen is:",action)
+        # wait for the sql to add data
+        while True:
+            time.sleep(2)
+            # count the total number of tasks
+            temp_task_id = getLastId()
+            print("(Reset)Current task num:", temp_task_id)
+            # load the number of tasks
+            # update the base station database if there exists update
+            if temp_task_id != self.task_id:
+                diff = temp_task_id - self.task_id
+                print("(Reset)insert tasks num:", diff)
+                self.task_id = temp_task_id
+                self.base_station.updateBSByTasks(diff)
+                break
         self.observation = np.concatenate([self.base_station.Gb, self.base_station.reliability, self.base_station.Ntr])
         # reward=self.base_station.get_reward(action[0],action[1])
               #update the state of chosen base station
-        reward = self.base_station.get_reward(action)
         #update the step number:iteration number=1
         self.step_num += 1
-        if self.step_num > 0:
+        if self.step_num > 100:
             self.done = True
         self.observation = np.concatenate([self.base_station.Gb, self.base_station.reliability, self.base_station.Ntr])
         self.iteration+=1
