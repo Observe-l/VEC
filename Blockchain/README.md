@@ -225,7 +225,7 @@ peer lifecycle chaincode install sacc.tar.gz
 
 # Algorithm 2 chaincode
 # Packet
-peer lifecycle chaincode package a2c.tar.gz --path /opt/gopath/src/github.com/hyperledger/fabric-cluster/chaincode/go/a2c --label a2c_2
+peer lifecycle chaincode package a2c.tar.gz --path /opt/gopath/src/github.com/hyperledger/fabric-cluster/chaincode/go/a2c --label a2c_1
 # Install chaincode
 peer lifecycle chaincode install a2c.tar.gz
 ```
