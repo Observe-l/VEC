@@ -22,13 +22,14 @@ type SimpleAsset struct {
 
 // BaseStation's information
 type BaseStation struct {
-	ID                          string  `json:"id"`
-	Global_computing_resource   float64 `json:"global_computing_resource"`
-	Reversed_computing_resource float64 `json:"reversed_computing_resource"`
-	Computing_efficiency        float64 `json:"computing_efficiency"`
-	Completion_ratio            float64 `json:"completion_ratio"`
-	Total_received_task         float64 `json:"total_received_task"`
-	Reliability                 float64 `json:"reliability"`
+	ID                                          string  `json:"id"`
+	OFFLOAD_VEHICLE_ID                          float64 `json:"offload_vehicle_id"`
+	SERVICE_VEHICLE_ID                          float64 `json:"service_vehicle_id"`
+	ALLOCATION_BASESTATION_ID                   float64 `json:"allocation_basestation_id"`
+	DELAY                                       float64 `json:"delay"`
+	DONE_STATUS                                 float64 `json:"done_status"`
+	VEHICLE_DENSITY                             string  `json:"vehicle_density"`
+	
 }
 
 // Init is called during chaincode instantiation to initialize any
@@ -63,7 +64,7 @@ func (t *SimpleAsset) Init(stub shim.ChaincodeStubInterface) peer.Response {
 	if err != nil {
 		return shim.Error("total_received_task input error")
 	}
-	rel, err := strconv.ParseFloat(args[6], 64)
+	rel := args[6]
 	if err != nil {
 		return shim.Error("reliability input error")
 	}
@@ -97,6 +98,8 @@ func (t *SimpleAsset) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 		return t.mul_get(stub, args)
 	} else if fn=="bslist" {
 		return t.QueryAllBSs(stub)
+	} else if fn=="delall" {
+		return t.delAllBSs(stub)
 	} else { // assume 'get' even if fn is nil
 		return t.get(stub, args)
 	}
@@ -130,7 +133,7 @@ func (t *SimpleAsset) set(stub shim.ChaincodeStubInterface, args []string) peer.
 	if err != nil {
 		return shim.Error("Total_received_task input error")
 	}
-	rel, err := strconv.ParseFloat(args[6], 64)
+	rel := args[6]
 	if err != nil {
 		return shim.Error("Reliability input error")
 	}
@@ -190,23 +193,17 @@ func (t *SimpleAsset) get(stub shim.ChaincodeStubInterface, args []string) peer.
 func (t *SimpleAsset) QueryAllBSs(stub shim.ChaincodeStubInterface) peer.Response {
 	var jsonResp string
 	var assets bytes.Buffer
-	// bsid := &BaseStation{ID}
-	type bsids struct {
-		bsid                          string  `json:"bsid"`
-	}
-	type Everything struct {
-		BSIDs                          []bsids  `json:"bsids"`
-	}
 	startKey := ""
 	endKey := ""
-	var everything Everything
 	resultsIterator, err := stub.GetStateByRange(startKey, endKey)
 
 	if err != nil {
 		jsonResp = "{\"Error\":\"Failed to get the state of Base Station \"}"
 		return shim.Error(jsonResp)
 	}
+	bAlreadyWritten := false
 	defer resultsIterator.Close()
+	assets.WriteString("[")
 	for resultsIterator.HasNext(){
 		aKeyValue, err := resultsIterator.Next()
 		if err != nil {
@@ -215,19 +212,63 @@ func (t *SimpleAsset) QueryAllBSs(stub shim.ChaincodeStubInterface) peer.Respons
 		}
 		querykeyAsStr := aKeyValue.Key
 		queryValAsBytes := aKeyValue.Value
+
+		if bAlreadyWritten {
+			assets.WriteString(",")
+		}
+		assets.WriteString("{\"id\":")
+		assets.WriteString("\"")
+		assets.WriteString(querykeyAsStr)
+		assets.WriteString("\"")
+
+		assets.WriteString(", \"Record\":")
 		assets.Write(queryValAsBytes)
-		fmt.Println("bs id - ", querykeyAsStr)
-		var id bsids
-		json.Unmarshal(queryValAsBytes, &id)
-		everything.BSIDs = append(everything.BSIDs, id)
+		assets.WriteString("}")
+		bAlreadyWritten = true
 	}
-	everythingAsBytes,_ := json.Marshal(everything)
-	fmt.Println("bs id - ", everythingAsBytes)
-	// return shim.Success(everythingAsBytes)
+	assets.WriteString("]")
 	return shim.Success(assets.Bytes())
 
 }
+func (t *SimpleAsset) delAllBSs(stub shim.ChaincodeStubInterface) peer.Response {
+	var jsonResp string
+	// var results bytes.Buffer
+	var res_str []string
+	startKey := ""
+	endKey := ""
+	resultsIterator, err := stub.GetStateByRange(startKey, endKey)
 
+	if err != nil {
+		jsonResp = "{\"Error\":\"Failed to get the state of Base Station \"}"
+		return shim.Error(jsonResp)
+	}
+	// basestation := new(BaseStation)
+	// results := []QueryResult{}
+	// results := []byte{}
+	// bAlreadyWritten := false
+	defer resultsIterator.Close()
+	for resultsIterator.HasNext(){
+		queryResponse, err := resultsIterator.Next()
+
+		if err != nil {
+			jsonResp = "{\"Error\":\"Failed to get the state of Base Station \"}"
+			return shim.Error(jsonResp)
+		}
+
+		queryResult := queryResponse.Key
+		res_str = append(res_str, queryResult)
+	}
+	for i,s := range res_str {
+		err := stub.DelState(s)
+		if err != nil {
+			jsonResp = "{\"Error\":\"Failed to delete the state of Base Station" + res_str[i]+ "\"}"
+			return shim.Error(jsonResp)
+		}
+		// results.WriteString(res_str[i])
+	}
+	// return shim.Success(results.Bytes())
+	return shim.Success(nil)
+}
 // mul_get returns all of data in a json format
 func (t *SimpleAsset) mul_get(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 	var assets bytes.Buffer
