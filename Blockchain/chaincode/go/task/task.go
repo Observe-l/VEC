@@ -188,34 +188,44 @@ func (t *SimpleAsset) get(stub shim.ChaincodeStubInterface, args []string) peer.
 }
 // QueryAllBSs returns all BSs found in world state
 func (t *SimpleAsset) QueryAllBSs(stub shim.ChaincodeStubInterface) peer.Response {
+	var jsonResp string
 	var assets bytes.Buffer
-	bAlwritten := false
-	startKey := "bs-"
+	// bsid := &BaseStation{ID}
+	type bsids struct {
+		bsid                          string  `json:"bsid"`
+	}
+	type Everything struct {
+		BSIDs                          []bsids  `json:"bsids"`
+	}
+	startKey := ""
 	endKey := ""
-
+	var everything Everything
 	resultsIterator, err := stub.GetStateByRange(startKey, endKey)
 
-	// if err != nil {
-	// 	return nil, err
-	// }
+	if err != nil {
+		jsonResp = "{\"Error\":\"Failed to get the state of Base Station \"}"
+		return shim.Error(jsonResp)
+	}
 	defer resultsIterator.Close()
-
-	// results := []QueryResult{}
-
-	// for resultsIterator.HasN
-	// results := []QueryResult{}
-	// 		return nil, err
-	// 	}
-
-	// 	basestation := new(BaseStation)
-	// 	_ = json.Unmarshal(queryResponse.Value, basestation)
-
-	// 	queryResult := QueryResult{Key: queryResponse.Key, Record: basestation}
-	// 	results = append(results, queryResult)
-	// }
-	assets.Write(resultsIterator)
+	for resultsIterator.HasNext(){
+		aKeyValue, err := resultsIterator.Next()
+		if err != nil {
+			jsonResp = "{\"Error\":\"Failed to get the state of Base Station \"}"
+			return shim.Error(jsonResp)
+		}
+		querykeyAsStr := aKeyValue.Key
+		queryValAsBytes := aKeyValue.Value
+		assets.Write(queryValAsBytes)
+		fmt.Println("bs id - ", querykeyAsStr)
+		var id bsids
+		json.Unmarshal(queryValAsBytes, &id)
+		everything.BSIDs = append(everything.BSIDs, id)
+	}
+	everythingAsBytes,_ := json.Marshal(everything)
+	fmt.Println("bs id - ", everythingAsBytes)
+	// return shim.Success(everythingAsBytes)
 	return shim.Success(assets.Bytes())
-	// return resultsIterator, nil
+
 }
 
 // mul_get returns all of data in a json format
