@@ -45,6 +45,7 @@ class taskInteraction():
         for i,v in enumerate(tasklist):
             while i!=50:
                 newlist.append(v)
+                i+=1
         return newlist
 
     def countAll(self):
