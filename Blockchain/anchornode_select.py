@@ -1,8 +1,6 @@
 import docker
-import json
-import time
 import string
-from BaseStation import BaseStation as bs
+
 def anchornode_selection(node):
     client=docker.APIClient(base_url='unix:///var/run/docker.sock')
     cmd="mkdir channel-artifacts1"
@@ -98,13 +96,12 @@ def anchornode_selection(node):
     result=client.exec_start(output).decode()
 
 if __name__ == '__main__':
-    BS=bs()
-    BS.id=3
-    if BS.id==0:
+    b_id =0
+    if b_id==0:
         anchornode_selection("peer0.ray.com")
-    elif BS.id==2:
+    elif b_id==2:
         anchornode_selection("peer1.ray.com")
-    elif BS.id==3:
+    elif b_id==3:
         anchornode_selection("peer2.ray.com")
     else:
         anchornode_selection("peer4.ray.com")
