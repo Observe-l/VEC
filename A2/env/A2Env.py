@@ -1,3 +1,4 @@
+from datetime import datetime
 import gym
 import gym.spaces
 import numpy as np
@@ -8,6 +9,7 @@ sys.path.append("..")
 from model.A2ModelSQL import A2EnvExtreme
 from util.TaskSQLUtil import countAll,getFirstId,getLastId
 from util.BSSQLUtil import *
+from Blockchain.anchornode_select import anchornode_selection
 
 class A2Env(gym.Env):
     def __init__(self,env_config):
@@ -36,6 +38,8 @@ class A2Env(gym.Env):
         self.observation = np.concatenate([self.base_station.Gb,self.base_station.reliability,self.base_station.Ntr])
         self.done = False
         self.step_num = 0
+        self.begin_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") #2017-09-20T12:59:43.888955
+
         return self.observation
 
     def step(self,action)->tuple:
@@ -44,8 +48,11 @@ class A2Env(gym.Env):
         @param action: take action selected by agent(range from[0,num of base station],Sbk)
         @return: tuple of (observation, reward, done, info)
         '''
+
         #print the base station chosen
         reward = self.base_station.get_reward(action)
+        # change the anchornode
+        anchornode_selection(action)
         print("(Step)In iteration "+str(self.iteration)+", the consensus node chosen is:",action)
         # wait for the sql to add data
         while True:
