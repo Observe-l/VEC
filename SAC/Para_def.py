@@ -62,7 +62,7 @@ class SACEnv:
         for index, row in data.iterrows():
             for n in range(self.s):
                 if n == int(task_ID):
-                    self.rt[0] = 99999999999
+                    self.rt[0] = 99
                 else:
                     vehicle = "VEHICLE" + str(n)
                     self.rt[n] = float(row[vehicle])
@@ -74,7 +74,7 @@ class SACEnv:
         data=pd.read_sql(sql_cmd,mydb)
         n = 0
         for index, row in data.iterrows():
-            self.Fs[n] = float(row['Fs']) * float(row['utilization'])
+            self.Fs[n] = float(row['Fs']) * float(row['utilization']) / 100
             n += 1
 
     def get_link_dur(self):

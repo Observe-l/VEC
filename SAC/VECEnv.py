@@ -36,11 +36,11 @@ class VECEnv(gym.Env):
         observation_array_min = np.append(observation_array_min, [0.0 for i in range(self.s)])
         observation_array_min = np.append(observation_array_min, [0.0 for i in range(self.s)])
         observation_array_min = np.append(observation_array_min, [0.0 for i in range(self.s)])
-        observation_array_max = np.append([100.5 for i in range(self.s)], [10.0 for i in range(self.s)])
+        observation_array_max = np.append([100.5 for i in range(self.s)], [100.0 for i in range(self.s)])
         observation_array_max = np.append(observation_array_max, [100.0 for i in range(self.s)])
         observation_array_max = np.append(observation_array_max, [100.0 for i in range(self.s)])
         observation_array_max = np.append(observation_array_max, [100.0 for i in range(self.s)])
-        observation_array_max = np.append(observation_array_max, [10.0 for i in range(self.s)])
+        observation_array_max = np.append(observation_array_max, [100.0 for i in range(self.s)])
         observation_array_max = np.append(observation_array_max, [100.0 for i in range(self.s)])
         self.observation_space = gym.spaces.box.Box(observation_array_min, observation_array_max, dtype=np.float32)
         self.base_station = SACEnv(self.s)
@@ -89,8 +89,8 @@ class VECEnv(gym.Env):
             event_ID = self.msg[2]
             
         else:
-            vehicle_ID = random.randint(0,3)
-            event_ID = random.randint(1,14)
+            vehicle_ID = str(random.randint(0,3))
+            event_ID = str(random.randint(1,14))
             self.msg = [vehicle_ID, event_ID]
     
         self.base_station.get_Fs(mydb)
