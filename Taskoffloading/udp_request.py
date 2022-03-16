@@ -31,7 +31,7 @@ def send(msg,ip) -> bool:
     head_type = struct.unpack("!10s",msg[4:14])
     # Creat a UDP socket, timeout = 0.1s, bind to port 4563
     sk = socket.socket(type=socket.SOCK_DGRAM)
-    sk.settimeout(0.05)
+    sk.settimeout(0.1)
     sk.bind(("",4563))
     # udp_send(msg,ip)
 
@@ -43,7 +43,7 @@ def send(msg,ip) -> bool:
             pass
         # If server receives the packet, it will return the a packet.
         # Otherwise, client will retransmit the packet 2 times.
-        if ack[0] == "ACK":
+        if ack[0] == "ACK" and head_type == ack[1]:
             ack_status = True
             return ack_status
         
