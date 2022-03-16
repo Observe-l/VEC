@@ -7,9 +7,10 @@ import sys
 sys.path.append("..")
 # from model.A2ModelSQL import A2EnvExtreme
 from model.A2ModelSQL import A2EnvExtreme
-from util.TaskSQLUtil import countAll,getFirstId,getLastId
+# from util.TaskSQLUtil import countAll,getFirstId,getLastId
 from util.BSSQLUtil import *
 from Blockchain.anchornode_select import anchornode_selection
+from util.Taskinteraction import taskInteraction
 
 class A2Env(gym.Env):
     def __init__(self,env_config):
@@ -38,7 +39,7 @@ class A2Env(gym.Env):
         self.observation = np.concatenate([self.base_station.Gb,self.base_station.reliability,self.base_station.Ntr])
         self.done = False
         self.step_num = 0
-        self.begin_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") #2017-09-20T12:59:43.888955
+        self.begin_time = taskInteraction.getNowTimestamp()
 
         return self.observation
 
@@ -57,17 +58,13 @@ class A2Env(gym.Env):
         # wait for the sql to add data
         while True:
             time.sleep(2)
-            # count the total number of tasks
-            temp_task_id = getLastId()
-            print("(Reset)Current task num:", temp_task_id)
-            # load the number of tasks
-            # update the base station database if there exists update
-            if temp_task_id != self.task_id:
-                diff = temp_task_id - self.task_id
-                print("(Reset)insert tasks num:", diff)
-                self.task_id = temp_task_id
-                self.base_station.updateBSByTasks(diff)
-                break
+            self.end_time = taskInteraction.getNowTimestamp()
+            new_tasks = taskInteraction.selectLatest(self.begin_time,self.end_time)
+            if len(new_tasks)!=0:
+                print("(Step)add task num:", len(new_tasks))
+                # update the base station database if there exists update
+                self.base_station.updateBSByTasks(new_tasks)
+            break
         self.observation = np.concatenate([self.base_station.Gb, self.base_station.reliability, self.base_station.Ntr])
         # reward=self.base_station.get_reward(action[0],action[1])
               #update the state of chosen base station

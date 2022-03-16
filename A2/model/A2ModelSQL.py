@@ -113,10 +113,9 @@ class A2EnvExtreme:
         self.reward = np.float(self.reward)
         return self.reward
 
-    def updateBSByTasks(self,num):
-        tasks = selectLatest(num)
+    def updateBSByTasks(self,tasks):
          #update state3
-        self.get_Ntr(num)
+        self.get_Ntr(len(tasks))
         for task in tasks:
             Ib = int(task.allocation_basestation_id)-1
             #update state 1

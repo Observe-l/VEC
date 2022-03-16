@@ -30,19 +30,18 @@ class taskInteraction():
 
     def getNowTimestamp(self):
         now=datetime.datetime.now()
-        ts = now.timestamp()
+        ts = now.strftime('%Y%m%d%H%M%S')
+        # print(ts)
         return ts
 
 
-    def selectLatest(self, num):
-        tasklist=self.bchain.getAllTask()
+    def selectLatest(self, sk, ek):
+        tasklist=self.bchain.getAllTask(sk, ek)
         count=0
         tasklist=tasklist[::-1]
         newlist=[]
         for i,v in enumerate(tasklist):
-            while i!=num:
-                newlist.append(v)
-                i+=1
+            newlist.append(v)
         return newlist
 
     def countAll(self):
@@ -72,16 +71,18 @@ if __name__ == '__main__':
     # print(task1[0].vehicle_density[str(1)])
     # a = np.array([task1[0].vehicle_density[str(i+1)] for i in range(2)])
     # print(a)
-    task=Task()
-    task.id="456"
-    task.offload_vehicle_id =  567
-    task.service_vehicle_id = 9877
-    task.allocation_basestation_id = 2
-    task.done_status = 1
-    task.vehicle_density = "{2:3, 1:2}"
-    task.delay = 5
-    tbc.insert(task)
+    # task=Task()
+    # task.id="2"
+    # task.offload_vehicle_id =  567
+    # task.service_vehicle_id = 9877
+    # task.allocation_basestation_id = 2
+    # task.done_status = 1
+    # task.vehicle_density = "{2:3, 1:2}"
+    # task.delay = 5
+    # tbc.insert(task)
     # print(tbc.deleteAllTasks())
+    # t1=tbc.getNowTimestamp()
+    
 
 
 
