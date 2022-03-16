@@ -97,9 +97,9 @@ func (t *SimpleAsset) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 	} else if fn == "mul_get" {
 		return t.mul_get(stub, args)
 	} else if fn=="bslist" {
-		return t.QueryAllBSs(stub)
+		return t.QueryAllBSs(stub, args)
 	} else if fn=="delall" {
-		return t.delAllBSs(stub)
+		return t.delAllBSs(stub, args)
 	} else { // assume 'get' even if fn is nil
 		return t.get(stub, args)
 	}
@@ -190,11 +190,16 @@ func (t *SimpleAsset) get(stub shim.ChaincodeStubInterface, args []string) peer.
 	return shim.Success(value)
 }
 // QueryAllBSs returns all BSs found in world state
-func (t *SimpleAsset) QueryAllBSs(stub shim.ChaincodeStubInterface) peer.Response {
+func (t *SimpleAsset) QueryAllBSs(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 	var jsonResp string
 	var assets bytes.Buffer
-	startKey := ""
 	endKey := ""
+	startKey := ""
+	if len(args) != 0{
+		startKey	= args[0]
+		endKey		= args[1]
+	}
+	fmt.Printf(startKey)
 	resultsIterator, err := stub.GetStateByRange(startKey, endKey)
 
 	if err != nil {
@@ -230,12 +235,16 @@ func (t *SimpleAsset) QueryAllBSs(stub shim.ChaincodeStubInterface) peer.Respons
 	return shim.Success(assets.Bytes())
 
 }
-func (t *SimpleAsset) delAllBSs(stub shim.ChaincodeStubInterface) peer.Response {
+func (t *SimpleAsset) delAllBSs(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 	var jsonResp string
 	// var results bytes.Buffer
 	var res_str []string
-	startKey := ""
 	endKey := ""
+	startKey := ""
+	if len(args) != 0{
+		startKey	= args[0]
+		endKey		= args[1]
+	}
 	resultsIterator, err := stub.GetStateByRange(startKey, endKey)
 
 	if err != nil {
@@ -244,7 +253,7 @@ func (t *SimpleAsset) delAllBSs(stub shim.ChaincodeStubInterface) peer.Response 
 	}
 	// basestation := new(BaseStation)
 	// results := []QueryResult{}
-	// results := []byte{}
+	// results := []byte{}"0","0","0","0"]}'
 	// bAlreadyWritten := false
 	defer resultsIterator.Close()
 	for resultsIterator.HasNext(){

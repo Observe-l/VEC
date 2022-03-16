@@ -34,7 +34,7 @@ Set up the respository
 
 ```shell
 sudo apt-get update && sudo apt-get upgrade
-sudo apt-get install \
+sudo apt-get install \peer channel create -c vec-channel -f ./channel-artifacts/channel.tx --orderer orderer.gcp.com:7050 --tls true --cafile "$ORDERER_CA"
     ca-certificates \
     curl \
     gnupg \

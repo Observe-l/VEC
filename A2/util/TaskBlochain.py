@@ -7,6 +7,22 @@ from Task import Task
 class taskBlockchain():
     def __init__(self):
         self.client = docker.APIClient(base_url='unix:///var/run/docker.sock')
+    def mul_set(self, tasklist):
+        i=0
+        while len(tasklist):
+            cmd = " peer chaincode invoke -o orderer.gcp.com:7050 -C vec-channel "\
+                    +"-n task --tls --cafile /opt/gopath/src/github.com/hyperl"\
+                    +"edger/fabric/peer/crypto/ordererOrganizations/gcp.com/msp/tlscacerts/tlsca.gcp.com-cert.pem " \
+                    +"-c '{\"Args\":[\"set\",\"" + str(tasklist[i].id) + "\","\
+                        + "\"" + str(tasklist[i].offload_vehicle_id) + "\","\
+                        + "\"" + str(tasklist[i].service_vehicle_id) + "\","\
+                        + "\"" + str(tasklist[i].allocation_basestation_id) + "\","\
+                        + "\"" + str(tasklist[i].delay) + "\","\
+                        + "\"" + str(tasklist[i].done_status) + "\","\
+                        + "\"" + str(tasklist[i].vehicle_density) + "\"]}'"
+            id1 = self.client.exec_create('cli1',cmd)
+            result1 = self.client.exec_start(id1).decode()
+
     # Update/instert one data to ledger.
     def update(self,task: Task):
         cmd = " peer chaincode invoke -o orderer.gcp.com:7050 -C vec-channel "\
@@ -92,8 +108,8 @@ class taskBlockchain():
         # Execute the docker command
         result1 = self.client.exec_start(id1).decode()
         print("TaskID {} has been deleted".format(id))
-    def getAllTask(self):
-        cmd = "peer chaincode query -C vec-channel -n task -c '{\"Args\":[\"bslist\"]}'"
+    def getAllTask(self, startkey="", endkey=""):
+        cmd = "peer chaincode query -C vec-channel -n task -c '{\"Args\":[\"bslist\",\""+startkey+"\",\""+endkey+"\"""]}'"
         id1 = self.client.exec_create('cli1',cmd)
 
         # Execute the docker command
@@ -116,13 +132,13 @@ class taskBlockchain():
                 task[i].done_status = float(js_data[i]['Record']['done_status'])
                 task[i].vehicle_density = js_data[i]['Record']['vehicle_density']
         return task
-    def delAllTask(self):
+    def delAllTask(self, startkey="", endkey=""):
         if self.getAllTask()==0:
             print("Sadly! There is no task to delete")
         else:
             cmd = "peer chaincode invoke -o orderer.gcp.com:7050 -C vec-channel -n task --tls" \
                 +" --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrga"\
-                +"nizations/gcp.com/msp/tlscacerts/tlsca.gcp.com-cert.pem -c '{\"Args\":[\"delall\"]}'"
+                +"nizations/gcp.com/msp/tlscacerts/tlsca.gcp.com-cert.pem -c '{\"Args\":[\"delall\",\""+startkey+"\",\""+endkey+"\"""]}'"
             id1 = self.client.exec_create('cli1',cmd)
             # Execute the docker command
             result1 = self.client.exec_start(id1).decode()
