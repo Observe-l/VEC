@@ -1,22 +1,25 @@
 import os
+import sched
 import docker
 import json
 import time
 
 from grpc import Status
 from Task import Task
-cmd="free"
-stream = os.popen(cmd)
-f=stream.read().split(" ")
-f=list(f)
-s={}
-for i,v in enumerate(f):
-    if v=="":
-        pass
-    else:
-        s[i] = v
-print("total_memory: "+str(s[49]))
-print("free memory: "+str(s[59]))
+def freememory():
+    cmd="free"
+    stream = os.popen(cmd)
+    f=stream.read().split(" ")
+    f=list(f)
+    s={}
+    for i,v in enumerate(f):
+        if v=="":
+            pass
+        else:
+            s[i] = v
+    # print("total_memory: "+str(s[49]))
+    print("free memory: "+str(s[59]))
+    return [s[49],s[59]]
 class BS():
     def __init__(self,id=None, tm=None, fm=None):
         self.id = id
@@ -51,6 +54,17 @@ def getByID(id: str):
         bs.tm=js_data['total_memory']
         bs.fm=js_data['free_memory']
         return bs
+def delByID(id: str):
+        cmd = " peer chaincode invoke -o orderer.gcp.com:7050 -C vec-channel "\
+                    +"-n sacc --tls --cafile /opt/gopath/src/github.com/hyperle"\
+                    +"dger/fabric/peer/crypto/ordererOrganizations/gcp.com/msp/tlscacerts/tlsca.gcp.com-cert.pem" \
+                    +"-c '{\"Args \":[\"del\",\"" + id + "\"]}'"
+
+        # Create a docker command
+        id1 = client.exec_create('cli1',cmd)
+        # Execute the docker command
+        result1 = client.exec_start(id1).decode()
+        print("TaskID {} has been deleted".format(id))
 def getAllTask(self, startkey="", endkey=""):
         cmd = "peer chaincode query -C vec-channel -n sacc "\
                 + " -c '{\"Args\":[\"bslist\",\""+startkey+"\",\""+endkey+"\"""]}'"
@@ -72,11 +86,17 @@ def getAllTask(self, startkey="", endkey=""):
                 bs[i].tm = float(js_data[i]['Record']['total_memory'])
                 bs[i].fm = float(js_data[i]['Record']['free_memory'])
         return bs
-
+def autoupdate(bs:BS):
+    while True:
+        [tm,fm] = freememory()
+        bs.id = "lap-1"
+        bs.tm = tm
+        bs.fm = fm
+        delByID("lap-1")
+        update(bs)
+        print(getByID("lap-1").fm)
+        time.sleep(5)
 if __name__ == '__main__':
     bs=BS()
-    bs.id="lap1"
-    bs.tm=s[49]
-    bs.fm=s[59]
-    update(bs)
-    print(getByID("lap1").fm)
+    autoupdate(bs)
+    

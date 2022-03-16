@@ -148,15 +148,15 @@ if __name__ == '__main__':
     bchain=taskBlockchain()
     l1 = bchain.getAllTask()
     print(l1[0])
-    # task=Task()
-    # task.id="123"
-    # task.offload_vehicle_id = 567
-    # task.service_vehicle_id = 9877
-    # task.allocation_basestation_id = 2
-    # task.done_status = 1
-    # task.vehicle_density = "{2:3, 1:2}"
-    # task.delay = 5
-    # bchain.update(task)
+    task=Task()
+    task.id="bssdwsadwad1-"+"15032022dafsedqwer23131231170958"
+    task.offload_vehicle_id = 567
+    task.service_vehicle_id = 9877
+    task.allocation_basestation_id = 2
+    task.done_status = 1
+    task.vehicle_density = "{2:3, 1:2}"
+    task.delay = 5
+    bchain.update(task)
     # bchain.delByID("123")
     # bchain.delAllTask()
     # tasklist=bchain.getAllTask()
