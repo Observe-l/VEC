@@ -1,5 +1,4 @@
 import os
-import sched
 import docker
 import json
 import time
@@ -18,8 +17,8 @@ def freememory():
         else:
             s[i] = v
     # print("total_memory: "+str(s[49]))
-    print("free memory: "+str(s[59]))
-    return [s[49],s[59]]
+    print("free memory: "+str(s[58]))
+    return [s[48],s[58]]
 class BS():
     def __init__(self,id=None, tm=None, fm=None):
         self.id = id
@@ -89,14 +88,15 @@ def getAllTask(self, startkey="", endkey=""):
 def autoupdate(bs:BS):
     while True:
         [tm,fm] = freememory()
-        bs.id = "lap-1"
+        bs.id = "redPC"
         bs.tm = tm
         bs.fm = fm
-        delByID("lap-1")
+        # delByID("redPC")
         update(bs)
-        print(getByID("lap-1").fm)
+        print(getByID("redPC").fm)
         time.sleep(5)
 if __name__ == '__main__':
     bs=BS()
     autoupdate(bs)
+    # freememory()
     

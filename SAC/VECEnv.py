@@ -8,6 +8,8 @@ from Para_def import SACEnv
 from time import time
 import pymysql
 
+import reliability
+from reliability import vehicle
 import TaskSQLUtil as TaskSQLUtil
 from Task import Task
 # import A2.util.Taskinteraction
@@ -17,7 +19,7 @@ sys.path.append("/home/vec/Documents/VEC/A2/util/")
 from Taskinteraction import taskInteraction
 
 mydb = pymysql.connect(
-  host="192.168.1.117",
+  host="localhost",
   user="VEC",
   password="666888",
   database="SAC"
@@ -51,6 +53,9 @@ class VECEnv(gym.Env):
         self.iteration = 0
         self.udp_status = 0
         self.train_step = 100
+        self.mean = [0,0,0,0]
+        self.cal_s = 0
+        self.cal_e = 0
         TaskSQLUtil.deleteAllTasks()
         # self.reset()
 
@@ -64,7 +69,8 @@ class VECEnv(gym.Env):
         Receive request from Raspberry.#reset = #step + 1
         Pre-training 200 times
         '''
-        if self.iteration > 2499:
+        self.cal_e = time()
+        if self.iteration > 5999:
             self.udp_status = 1
             self.train_step = 0
             start = time()
@@ -85,18 +91,26 @@ class VECEnv(gym.Env):
             self.base_station.D_size = float(self.msg[3]) * np.ones(self.s)
             self.base_station.C_size = float(self.msg[4]) * np.ones(self.s)
             self.base_station.Tn = float(self.msg[5]) * np.ones(self.s)
+            # read reliability from blockchain
+            get_rel = reliability.getAlldata()
+            for i in range(len(get_rel)):
+                self.base_station.reliability[get_rel[i].id] = get_rel[i].re
             vehicle_ID = self.msg[1]
             event_ID = self.msg[2]
             
         else:
             vehicle_ID = str(random.randint(0,3))
             event_ID = str(random.randint(1,14))
-            self.msg = [vehicle_ID, event_ID]
+            self.msg = ["request",vehicle_ID, event_ID]
     
         self.base_station.get_Fs(mydb)
         self.base_station.get_rate(vehicle_ID, event_ID, mydb)
+    
         self.observation = np.concatenate([self.base_station.Fs,self.base_station.rt,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.Tn])
         self.done = False
+        self.mean = [0,0,0,0]
+        print("100 steps total time is:", self.cal_e-self.cal_s)
+        self.cal_s =time()
         
         self.step_num = 1
 
@@ -163,26 +177,24 @@ class VECEnv(gym.Env):
         self.base_station.get_normalized_utility(action)
         self.base_station.update_completion_ratio(action)
         self.base_station.update_compute_efficiency(action)
-        self.base_station.update_reliability(action) 
+        self.base_station.get_reliability(action)
 
         self.step_num+=1
         self.iteration += 1
-
+        self.mean[action] += 1
         reward=self.base_station.get_reward(action)
         if self.step_num>self.train_step:
             self.done = True
         self.observation = np.concatenate([self.base_station.Fs,self.base_station.rt,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.Tn])
         
         if self.done == True and self.udp_status == 1:
-            for i in range(self.s):
-                sql1 = "UPDATE dataupload SET completion_ratio = %s, reliability = %s WHERE vehicleID = %s"
-                input_data1 = (self.base_station.completion_ratio[i],self.base_station.reliability[i], i)
-                mycursor.execute(sql1, input_data1)
-                # sql2 = "UPDATE dataupload SET reliability = %s WHERE vehicleID = %s"
-                # input_data2 = (self.base_station.reliability[i], i)
-                # mycursor.execute(sql2, input_data2)
+            reliability.mul_set(self.base_station)
+            # for i in range(self.s):
+            #     sql1 = "UPDATE dataupload SET completion_ratio = %s, reliability = %s WHERE vehicleID = %s"
+            #     input_data1 = (self.base_station.completion_ratio[i],self.base_station.reliability[i], i)
+            #     mycursor.execute(sql1, input_data1)
 
-        print("Action is", action)
+        print("Task vehicle is:",self.msg[1],", Action is", action, ", max action is: ",self.mean.index(max(self.mean)))
         return self.observation,reward,self.done,{}
 
 

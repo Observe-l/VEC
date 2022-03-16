@@ -29,7 +29,7 @@ class SACEnv:
         self.D_size = 3.5 * np.ones(s)
         self.C_size = 3.2 * np.ones(s)
         self.lam = -10
-        self.Tn = 10 * np.ones(s)
+        self.Tn = 2 * np.ones(s)
         self.pn = 0.1
         # self.Vehicle_density = self.get_vehicle_density()
         self.t_delay = np.zeros(s)
@@ -39,16 +39,15 @@ class SACEnv:
         self.normalized_utility = np.zeros(s)
 
         self.compute_efficiency = np.zeros(s)
-        self.omega1 = 0.2  #range from[0,1]
+        self.omega1 = 0.8  #range from[0,1]
         self.completion_ratio = np.zeros(s)
         self.total_received_task = np.zeros(s)
-        self.omega2 = 0.2
-        # self.reliability = self.get_reliability()
-
+        self.omega2 = 0.8
+        self.id = []
+        for i in range(self.s):
+            self.id.append(i)
 
         self.reliability = np.zeros(s)
-
-
 
         #simulation data
         self.Fs = np.zeros(s)
@@ -62,10 +61,11 @@ class SACEnv:
         for index, row in data.iterrows():
             for n in range(self.s):
                 if n == int(task_ID):
-                    self.rt[0] = 99
+                    self.rt[n] = 99
                 else:
                     vehicle = "VEHICLE" + str(n)
                     self.rt[n] = float(row[vehicle])
+        print("task vehicle is:",task_ID,", event id is:", event_ID,", rate:",self.rt)
 
         return np.random.uniform(1, 6,(self.s,))
     
@@ -74,7 +74,7 @@ class SACEnv:
         data=pd.read_sql(sql_cmd,mydb)
         n = 0
         for index, row in data.iterrows():
-            self.Fs[n] = float(row['Fs']) * float(row['utilization']) / 100
+            self.Fs[n] = float(row['Fs']) * (100-float(row['utilization'])) / 100
             n += 1
 
     def get_link_dur(self):
@@ -83,13 +83,13 @@ class SACEnv:
         return l_dur
 
     def get_t_delay(self, Vs:int,t2:str):
-        tde = self.D_size[Vs]/self.rt + float(t2)
+        tde = self.D_size[Vs]/self.rt[Vs] + float(t2)
         self.t_delay[Vs] = tde
         return tde
     
     # Before receive real data from RPi, use some random data traing 200 times
     def pre_training(self, Vs:int):
-        tde = self.D_size[Vs]/self.rt + self.C_size[Vs]/self.Fs[Vs]
+        tde = self.D_size[Vs]/self.rt[Vs] + self.C_size[Vs]/self.Fs[Vs]
         self.t_delay[Vs] = tde
         return tde
 
@@ -135,15 +135,16 @@ class SACEnv:
         return
 
     def get_reliability(self,Vs):
-        result = self.omega2 * self.compute_efficiency[Vs] + (1 - self.omega2) * self.completion_ratio[Vs]
-        return result
-
-    def update_reliability(self,Vs):
-        self.get_normalized_utility(Vs)
-        self.update_compute_efficiency(Vs)
-        self.update_completion_ratio(Vs)
-        self.reliability[Vs] = self.get_reliability(Vs)
+        self.reliability[Vs] = self.omega2 * self.compute_efficiency[Vs] + (1 - self.omega2) * self.completion_ratio[Vs]
         return
+        # return result
+
+    # def update_reliability(self,Vs):
+    #     self.get_normalized_utility(Vs)
+    #     self.update_compute_efficiency(Vs)
+    #     self.update_completion_ratio(Vs)
+    #     self.reliability[Vs] = self.get_reliability(Vs)
+    #     return
     
     def get_density(self,event:str, mydb):
         sql_cmd = "select BS0_DENSITY, BS1_DENSITY from ts_vehicle0 where EVENT=" + event
