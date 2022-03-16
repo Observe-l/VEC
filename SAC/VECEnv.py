@@ -75,22 +75,27 @@ class VECEnv(gym.Env):
             '''
             Request head should be "request". Otherwise, program will exit and print error head packet.
             '''
-            if self.msg[0] != "request":
+            while self.msg[0] != "request":
                 print("Request error, error head: ",self.msg[0])
-                exit(1)
-
+                self.msg, self.addr = udp_request.receive()
+            
+            # Time stamp - when receive the udp request
+            self.start_time = time()
             #Update the state space
             self.base_station.D_size = float(self.msg[3]) * np.ones(self.s)
             self.base_station.C_size = float(self.msg[4]) * np.ones(self.s)
             self.base_station.Tn = float(self.msg[5]) * np.ones(self.s)
-            # Time stamp - when receive the udp request
-            self.start_time = time()
+            vehicle_ID = self.msg[1]
+            event_ID = self.msg[2]
+            
         else:
             vehicle_ID = random.randint(0,3)
             event_ID = random.randint(1,14)
             self.msg = [vehicle_ID, event_ID]
-
-        self.observation = np.concatenate([self.base_station.Fs,self.base_station.snr,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.Tn])
+    
+        self.base_station.get_Fs(mydb)
+        self.base_station.get_rate(vehicle_ID, event_ID, mydb)
+        self.observation = np.concatenate([self.base_station.Fs,self.base_station.rt,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.Tn])
         self.done = False
         
         self.step_num = 1
@@ -116,21 +121,25 @@ class VECEnv(gym.Env):
             self.end_time = time()
             SAC_time = self.end_time - self.start_time
             
-            # Return the action to the task vehicle.
-            action_msg = struct.pack("!i10s10s",2,b"offloading",str(action).encode())
+            # Return the action to the task vehicle. If send error, back to reset function
+            action_msg = struct.pack("!i10s10s",3,b"offloading",str(action).encode(),str(self.base_station.Fs[action]).encode())
             status = udp_request.send(action_msg, self.addr)
             if status == False:
                 print("Action send error")
                 reward = 0
                 self.done =True
                 return self.observation,reward,self.done,{}
-            # Vehicle will return a "complete" packet
+
+            # Vehicle will return a "complete" packet, or back to reset function
             self.msg, self.addr = udp_request.receive()
             if self.msg[0] != "complete":
                 print("Complete packet error, error head: ",self.msg[0])
-                exit(1)
+                reward = 0
+                self.done =True
+                return self.observation,reward,self.done,{}
+
             t2 = self.msg[2]
-            tde = self.base_station.get_t_delay(action,vehicle_ID,event_ID,t2,mydb)
+            tde = self.base_station.get_t_delay(action, t2)
             density = self.base_station.get_density(event_ID, mydb)
             if tde > self.base_station.Tn[action]:
                 complete_status = '0'
@@ -146,9 +155,7 @@ class VECEnv(gym.Env):
             '''
             Pre-training 200 times
             '''
-            vehicle_ID = self.msg[0]
-            event_ID = self.msg[1]
-            tde = self.base_station.pre_training(action,str(vehicle_ID),str(event_ID),mydb)
+            tde = self.base_station.pre_training(action)
 
             
         self.base_station.get_utility(action,tde)
@@ -164,7 +171,7 @@ class VECEnv(gym.Env):
         reward=self.base_station.get_reward(action)
         if self.step_num>self.train_step:
             self.done = True
-        self.observation = np.concatenate([self.base_station.Fs,self.base_station.snr,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.Tn])
+        self.observation = np.concatenate([self.base_station.Fs,self.base_station.rt,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.Tn])
         
         if self.done == True and self.udp_status == 1:
             for i in range(self.s):

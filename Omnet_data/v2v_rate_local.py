@@ -11,7 +11,7 @@ Assume Vehicle 0 as Task Vehicle
 
 db = pymysql.connect(
      host = "localhost",
-     user = "zequn",
+     user = "VEC",
      password = "666888",
      database = "SAC"
 )

@@ -1,21 +1,23 @@
+import random
 import pymysql
 import pandas as pd
 import time
 
-conn = pymysql.connect(host='localhost',user='VEC',passwd='666888',database='utilization')
+conn = pymysql.connect(host='localhost',user='VEC',passwd='666888',database='SAC')
 # conn = sqlite3.connect("/home/lwh/nfsroot/Taskoffload.db")
 c = conn.cursor()
 print ("Open database successful")
 
-c.execute('''CREATE TABLE CPU(
-          ID VARCHAR(20) PRIMARY KEY NOT NULL,
-          persentage REAL)
-''')
-conn.commit()
+# c.execute('''CREATE TABLE vehicle_information(
+#           ID VARCHAR(20) PRIMARY KEY NOT NULL,
+#           Fs REAL,
+#           utilization REAL)
+# ''')
+# conn.commit()
 
-sql = "INSERT INTO CPU (ID, persentage) VALUES (%s,%s)"
+sql = "INSERT INTO vehicle_information (ID, Fs, utilization) VALUES (%s,%s,%s)"
 time_start = time.time()
-c.execute(sql, (1, 5.6))
+c.execute(sql, (1, random.uniform(3,7), 10.5))
 # c.execute("INSERT INTO vehicle (ID, v, angle, x, y) VALUES ('left_0', 35.8, 90, 265.4, 102.9)")
 # c.execute("DELETE from vehicle where ID in (4,5,6,7,8)")
 # c.execute("UPDATE vehicle set (v,angle,x,y) = (%s,%s,%s,%s) where ID = %s",(16, 270, 512 , 365,'left_0'))

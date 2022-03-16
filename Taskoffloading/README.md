@@ -69,6 +69,6 @@ RPi generate some task based on $F_s=7,\,T=0.2\thicksim0.514 \,s$. We can set di
 
 | Type          | length    | Head       | Data 1       | Data 2                  | Data 3 |
 | ------------- | --------- | ---------- | ------------ | ----------------------- | ------ |
-| Allocate task | 2 packets | offloading | vehicle ID   | $F_s$ (service vehicle) | -      |
+| Allocate task | 3 packets | offloading | vehicle ID   | $F_s$ (service vehicle) | -      |
 | ACK           | 2 packet2 | ACK        | request type | -                       | -      |
 
