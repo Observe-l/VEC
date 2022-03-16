@@ -41,7 +41,8 @@ class taskInteraction():
         tasklist=tasklist[::-1]
         newlist=[]
         for i,v in enumerate(tasklist):
-            newlist.append(v)
+            while i!=num:
+                newlist.append(v)
         return newlist
 
     def countAll(self):
@@ -72,7 +73,7 @@ if __name__ == '__main__':
     # a = np.array([task1[0].vehicle_density[str(i+1)] for i in range(2)])
     # print(a)
     # task=Task()
-    # task.id="2"
+    # task.id="456"
     # task.offload_vehicle_id =  567
     # task.service_vehicle_id = 9877
     # task.allocation_basestation_id = 2
@@ -81,7 +82,7 @@ if __name__ == '__main__':
     # task.delay = 5
     # tbc.insert(task)
     # print(tbc.deleteAllTasks())
-    # t1=tbc.getNowTimestamp()
+    print(tbc.selectLatest(1))
     
 
 
