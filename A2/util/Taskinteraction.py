@@ -2,8 +2,8 @@ import datetime
 import pymysql
 import sys
 sys.path.append("..")
-from util.TaskTransfer import TaskDF2Task
-from util.Task import Task
+# from util.TaskTransfer import TaskDF2Task
+from Task import Task
 import pandas as pd
 import json
 import numpy as np
@@ -43,7 +43,7 @@ class taskInteraction():
         tasklist=tasklist[::-1]
         newlist=[]
         for i,v in enumerate(tasklist):
-            while i!=50:
+            while i!=num:
                 newlist.append(v)
                 i+=1
         return newlist
@@ -75,15 +75,18 @@ if __name__ == '__main__':
     # print(task1[0].vehicle_density[str(1)])
     # a = np.array([task1[0].vehicle_density[str(i+1)] for i in range(2)])
     # print(a)
-    task=Task()
-    task.id="123"
-    task.offload_vehicle_id =  567
-    task.service_vehicle_id = 9877
-    task.allocation_basestation_id = 2
-    task.done_status = 1
-    task.vehicle_density = "{2:3, 1:2}"
-    task.delay = 5
-    tbc.insert(task)
+    # task=Task()
+    # task.id="45"
+    # task.offload_vehicle_id =  567
+    # task.service_vehicle_id = 9877
+    # task.allocation_basestation_id = 2
+    # task.done_status = 1
+    # task.vehicle_density = "{2:3, 1:2}"
+    # task.delay = 5
+    # tbc.insert(task)
+    l1=tbc.selectLatest(1)
+    print(l1)
+
     # print(tbc.deleteAllTasks())
 
 

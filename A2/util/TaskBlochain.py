@@ -130,6 +130,7 @@ class taskBlockchain():
 
 if __name__ == '__main__':
     bchain=taskBlockchain()
+    list = bchain.getAllTask()
     # task=Task()
     # task.id="123"
     # task.offload_vehicle_id = 567
