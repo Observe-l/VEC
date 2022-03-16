@@ -10,6 +10,11 @@ import pymysql
 
 import TaskSQLUtil as TaskSQLUtil
 from Task import Task
+# import A2.util.Taskinteraction
+import os, sys
+# CURRENT_DIR = os.path.dirname(os.path.abspath("/home/vec/Documents/VEC/A2/util/"))
+sys.path.append("/home/vec/Documents/VEC/A2/util/")
+from Taskinteraction import taskInteraction
 
 mydb = pymysql.connect(
   host="192.168.1.117",
@@ -131,8 +136,11 @@ class VECEnv(gym.Env):
                 complete_status = '0'
             else:
                 complete_status = '1'
-            com_task = Task('1',vehicle_ID,str(action),self.bs_ID,complete_status,density,SAC_time)
-            TaskSQLUtil.insert(com_task)
+            
+            task_id = taskInteraction.getNowTimestamp()+'bs'+self.bs_ID
+            com_task = Task(task_id,vehicle_ID,str(action),self.bs_ID,complete_status,density,SAC_time)
+
+            taskInteraction.insert(com_task)
             # TaskSQLUtil.insert(com_task)
         else:
             '''
@@ -177,7 +185,7 @@ class VECEnv(gym.Env):
 
 
 if __name__ == '__main__':
-    env = VECEnv()
+    env = VECEnv(gym.Env)
     env.reset()
 
 
