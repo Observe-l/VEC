@@ -59,6 +59,8 @@ services:
     extra_hosts:
       - "orderer.gcp.com:192.168.1.117"
       - "peer0.ray.com:192.168.1.117"
+      - "peer1.ray.com:192.168.1.122"
+      - "peer4.ray.com:192.168.1.115"
 
 
   cli1:
@@ -92,6 +94,8 @@ services:
     extra_hosts:
       - "orderer.gcp.com:192.168.1.117"
       - "peer0.ray.com:192.168.1.117"
+      - "peer1.ray.com:192.168.1.122"
+      - "peer4.ray.com:192.168.1.115"
     networks:
       - test
  
