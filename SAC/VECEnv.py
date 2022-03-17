@@ -10,7 +10,7 @@ import pymysql
 
 import reliability
 from reliability import vehicle
-import TaskSQLUtil as TaskSQLUtil
+# import TaskSQLUtil as TaskSQLUtil
 from Task import Task
 # import A2.util.Taskinteraction
 import os, sys
@@ -47,7 +47,7 @@ class VECEnv(gym.Env):
         self.observation_space = gym.spaces.box.Box(observation_array_min, observation_array_max, dtype=np.float32)
         self.base_station = SACEnv(self.s)
         # base station ID
-        self.bs_ID = '1'
+        self.bs_ID = '2'
 
         # iteration
         self.iteration = 0
@@ -56,7 +56,7 @@ class VECEnv(gym.Env):
         self.mean = [0,0,0,0]
         self.cal_s = 0
         self.cal_e = 0
-        TaskSQLUtil.deleteAllTasks()
+        # TaskSQLUtil.deleteAllTasks()
         # self.reset()
 
     def reset(self):
@@ -70,7 +70,7 @@ class VECEnv(gym.Env):
         Pre-training 200 times
         '''
         self.cal_e = time()
-        if self.iteration > 5999:
+        if self.iteration > 1499:
             self.udp_status = 1
             self.train_step = 0
             start = time()
@@ -136,7 +136,7 @@ class VECEnv(gym.Env):
             SAC_time = self.end_time - self.start_time
             
             # Return the action to the task vehicle. If send error, back to reset function
-            action_msg = struct.pack("!i10s10s",3,b"offloading",str(action).encode(),str(self.base_station.Fs[action]).encode())
+            action_msg = struct.pack("!i10s10s10s",3,b"offloading",str(action).encode(),str(self.base_station.Fs[action]).encode())
             status = udp_request.send(action_msg, self.addr)
             if status == False:
                 print("Action send error")
@@ -160,10 +160,11 @@ class VECEnv(gym.Env):
             else:
                 complete_status = '1'
             
-            task_id = taskInteraction.getNowTimestamp()+'bs'+self.bs_ID
+            bc_ts = taskInteraction()
+            task_id = bc_ts.getNowTimestamp()+'bs'+self.bs_ID
             com_task = Task(task_id,vehicle_ID,str(action),self.bs_ID,complete_status,density,SAC_time)
 
-            taskInteraction.insert(com_task)
+            bc_ts.insert(com_task)
             # TaskSQLUtil.insert(com_task)
         else:
             '''

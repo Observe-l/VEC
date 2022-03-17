@@ -40,7 +40,6 @@ class taskBlockchain():
 
         # Execute the docker command
         result1 = self.client.exec_start(id1).decode()
-        print("congratulations! the task has been added to the blockchain")
 
     # Get one data from ledged. Recommde use mul_get function to get two or more data.
     # This function will return a class

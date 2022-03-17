@@ -17,7 +17,7 @@ print ("Open database successful")
 
 sql = "INSERT INTO vehicle_information (ID, Fs, utilization) VALUES (%s,%s,%s)"
 time_start = time.time()
-c.execute(sql, (1, random.uniform(3,7), 10.5))
+c.execute(sql, (3, random.uniform(3,7), 10.5))
 # c.execute("INSERT INTO vehicle (ID, v, angle, x, y) VALUES ('left_0', 35.8, 90, 265.4, 102.9)")
 # c.execute("DELETE from vehicle where ID in (4,5,6,7,8)")
 # c.execute("UPDATE vehicle set (v,angle,x,y) = (%s,%s,%s,%s) where ID = %s",(16, 270, 512 , 365,'left_0'))

@@ -103,7 +103,7 @@ def mul_set(data:SACEnv):
                 +"edger/fabric/peer/crypto/ordererOrganizations/gcp.com/msp/tlscacerts/tlsca.gcp.com-cert.pem " \
                 + " -c '{\"Args\":[\"mul_set\""
     for i in range(data.s):
-        cmd = cmd + ",\"", + str(data.id[i]) + "\",\"" + str(data.completion_ratio[i]) \
+        cmd = cmd + ",\"" + str(data.id[i]) + "\",\"" + str(data.completion_ratio[i]) \
                 + "\",\"" + str(data.reliability[i]) + "\""
     cmd = cmd + "]}'"
     id1 = client.exec_create('cli1',cmd)

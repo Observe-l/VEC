@@ -105,12 +105,12 @@ if __name__ == "__main__":
         # Choose some task randomly
         base_iter = get_iter(n)
         Cn = str(cal_cn(n,base_iter))
-        tau_n = get_tau(Dn[n],Cn)
+        tau_n = get_tau(float(Dn[n]),float(Cn))
         bs_id = random.randint(0,1)
         # bs_id = 1
         start_time = time.time()
         '''Send request to SAC until SAC return a "offloading" packet '''
-        requset_msg = struct.pack("!i10s10s10s10s10s10s",6,b"request",tv_id.encode(),str(event).encode(),Dn[n].encode(),Cn[n].encode(),str(tau_n).encode())
+        requset_msg = struct.pack("!i10s10s10s10s10s10s",6,b"request",tv_id.encode(),str(event).encode(),Dn[n].encode(),Cn.encode(),str(tau_n).encode())
         status = udp_request.send(requset_msg,Station_IP[bs_id])
 
         if status == False:
@@ -142,6 +142,6 @@ if __name__ == "__main__":
         else:
             event = 1
             print("Completed all of the events")
-        print("#",n," task is completed by: ",vid)
+        print("#",n," task is completed by: ",vid[int(action)])
         print("Total time: ",total_time)
         time.sleep(1)
