@@ -35,8 +35,8 @@ class A2EnvExtreme:
         # reward parameters
         self.epsilon1 = 0.4
         self.epsilon2 = 0.6
-        self.maximum_tolerance_dalay = 20
-        self.gamma = -1
+        self.maximum_tolerance_dalay = 2
+        self.gamma = -50
         self.reward = 0
     
 
@@ -92,22 +92,13 @@ class A2EnvExtreme:
         return
 
 
-    def get_verify_time1(self):
-        return np.random.uniform(15, 30)
-
-    def get_verify_time2(self):
-        return np.random.uniform(10, 21)
 
 
-    def get_reward(self, Ib):
+    def get_reward(self, Ib,delay):
         Sbk = 8
         #TODO: the delay should be got from real blockchain
-        if Ib == 0:
-            delay = self.get_verify_time1()
-        else:
-            delay = self.get_verify_time2()
         if delay > self.maximum_tolerance_dalay:
-            self.reward = -5
+            self.reward = -50
         else:
             self.reward = (self.epsilon1 * self.baseStations[Ib].reliability + self.epsilon2 * Sbk / 2.0) * (
                     1 + self.maximum_tolerance_dalay - delay)

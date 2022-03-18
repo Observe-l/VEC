@@ -4,6 +4,7 @@ from Task import Task
 import pandas as pd
 import json
 import numpy as np
+import time
 from TaskBlochain import taskBlockchain
 class taskInteraction():
     def __init__(self):
@@ -37,12 +38,12 @@ class taskInteraction():
 
     def selectLatest(self, sk, ek):
         tasklist=self.bchain.getAllTask(sk, ek)
+        if tasklist==0:
+            return 0
         count=0
-        tasklist=tasklist[::-1]
         newlist=[]
         for i,v in enumerate(tasklist):
-            while i!=num:
-                newlist.append(v)
+            newlist.append(v)
         return newlist
 
     def countAll(self):
@@ -82,7 +83,13 @@ if __name__ == '__main__':
     # task.delay = 5
     # tbc.insert(task)
     # print(tbc.deleteAllTasks())
-    print(tbc.selectLatest(1))
+    t0=tbc.getNowTimestamp()
+    time.sleep(2)
+    t1=tbc.getNowTimestamp()
+    l1 = tbc.selectLatest(t0,t1)
+    print(l1)
+
+
     
 
 

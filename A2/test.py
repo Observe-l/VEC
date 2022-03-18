@@ -1,10 +1,8 @@
-from util.BSSQLUtil import *
-from util.BaseStationTransfer import *
-import pandas as pd
-import numpy as np
+import sys
+sys.path.append('.')
+sys.path.append('/home/vec/Documents/VEC/Blockchain')
+import anchornode_select
+
 
 if __name__ == '__main__':
-    with open("result2.txt", 'a') as file:
-        file.write('result')
-        file.write('\n')
-        file.close()
+    print('hh')

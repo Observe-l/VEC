@@ -1,5 +1,3 @@
-import warnings
-warnings.filterwarnings("ignore")
 from ray import tune
 import ray
 from ray.rllib.agents.dqn import DQNTrainer
@@ -13,6 +11,6 @@ t = tune.run(
         'framework':'tfe'
     },
     stop={
-        'episodes_total':50
+        'episodes_total':10
     }
 )
