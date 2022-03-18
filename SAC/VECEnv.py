@@ -47,7 +47,7 @@ class VECEnv(gym.Env):
         self.observation_space = gym.spaces.box.Box(observation_array_min, observation_array_max, dtype=np.float32)
         self.base_station = SACEnv(self.s)
         # base station ID
-        self.bs_ID = '2'
+        self.bs_ID = '1'
 
         # iteration
         self.iteration = 0
@@ -70,7 +70,7 @@ class VECEnv(gym.Env):
         Pre-training 200 times
         '''
         self.cal_e = time()
-        if self.iteration > 1499:
+        if self.iteration > 5999:
             self.udp_status = 1
             self.train_step = 0
             start = time()
