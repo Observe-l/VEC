@@ -7,6 +7,7 @@ import sys
 sys.path.append("..")
 # from model.A2ModelSQL import A2EnvExtreme
 from model.A2ModelSQL import A2EnvExtreme
+from model.pretrainEnv import pretrainEnv
 # from util.TaskSQLUtil import countAll,getFirstId,getLastId
 from util.BSSQLUtil import *
 from Blockchain.anchornode_select import anchornode_selection
@@ -35,6 +36,10 @@ class A2Env(gym.Env):
         reset the state of the environment
         @return: state
         '''
+        if self.iteration<2000:
+
+
+        
         self.base_station = A2EnvExtreme()   #Load the data from the dataset
         self.observation = np.concatenate([self.base_station.Gb,self.base_station.reliability,self.base_station.Ntr])
         self.done = False
@@ -49,7 +54,8 @@ class A2Env(gym.Env):
         @param action: take action selected by agent(range from[0,num of base station],Sbk)
         @return: tuple of (observation, reward, done, info)
         '''
-
+        #pretrain the model
+        
         #print the base station chosen
         reward = self.base_station.get_reward(action)
         # change the anchornode

@@ -21,7 +21,7 @@ class A2EnvExtreme:
 
         # state2 reliability
         self.Tn = [4,4] #maximun tolerance delay
-         # get from zequn
+
         self.omega1 = 0.8  # range from[0,1]
         self.omega2 = 0.8
         self.reliability = np.array([self.baseStations[i].reliability for i in range(self.b)])
@@ -38,12 +38,13 @@ class A2EnvExtreme:
         self.maximum_tolerance_dalay = 20
         self.gamma = -1
         self.reward = 0
+    
 
     def get_Gb(self):
         '''
         @return: available computing resource
         '''
-        print(self.baseStations[0].vehicle_density)
+        # print(self.baseStations[0].vehicle_density)
         Gb = np.array([self.baseStations[i].global_computing_resource - (self.baseStations[i].reserved_computing_resource +self.u * float(self.baseStations[i].vehicle_density)) for i in range(self.b)])
         return Gb
 
@@ -133,6 +134,10 @@ class A2EnvExtreme:
             #save the state to the basestation database
             update(self.baseStations[Ib])
         return
+
+
+
+
 
 
 
