@@ -28,6 +28,7 @@ class A2Env(gym.Env):
         # TODO:add reset the task table
         self.task_id=getFirstId()
         self.iteration=0
+        self.flag = 1 #pretrain flag
         print("(Init)initial task id:",self.task_id)
         self.reset()
 
@@ -37,14 +38,14 @@ class A2Env(gym.Env):
         @return: state
         '''
         if self.iteration<2000:
-
-
-        
-        self.base_station = A2EnvExtreme()   #Load the data from the dataset
+            self.base_station = pretrainEnv()
+        else:
+            flag = 0
+            self.base_station = A2EnvExtreme()   #Load the data from the dataset
+            self.begin_time = taskInteraction.getNowTimestamp()
         self.observation = np.concatenate([self.base_station.Gb,self.base_station.reliability,self.base_station.Ntr])
         self.done = False
         self.step_num = 0
-        self.begin_time = taskInteraction.getNowTimestamp()
 
         return self.observation
 
@@ -54,26 +55,27 @@ class A2Env(gym.Env):
         @param action: take action selected by agent(range from[0,num of base station],Sbk)
         @return: tuple of (observation, reward, done, info)
         '''
-        #pretrain the model
-        
-        #print the base station chosen
-        reward = self.base_station.get_reward(action)
-        # change the anchornode
-        anchornode_selection(action)
+        #print the base station chosen        # change the anchornode
         print("(Step)In iteration "+str(self.iteration)+", the consensus node chosen is:",action)
-        # wait for the sql to add data
-        while True:
-            time.sleep(2)
-            self.end_time = taskInteraction.getNowTimestamp()
-            new_tasks = taskInteraction.selectLatest(self.begin_time,self.end_time)
-            if len(new_tasks)!=0:
-                print("(Step)add task num:", len(new_tasks))
-                # update the base station database if there exists update
-                self.base_station.updateBSByTasks(new_tasks)
-            break
-        self.observation = np.concatenate([self.base_station.Gb, self.base_station.reliability, self.base_station.Ntr])
-        # reward=self.base_station.get_reward(action[0],action[1])
-              #update the state of chosen base station
+         # change the anchornode
+        V_delay = anchornode_selection(action)
+        reward = self.base_station.get_reward(action,V_delay)
+        #pretrain the model
+        if flag==1:
+            num = np.random.randint(0,5)
+            self.base_station.updataBSByTasks(num)
+        else:
+            # wait for the blockchain to add data
+            while True:
+                time.sleep(2)
+                self.end_time = taskInteraction.getNowTimestamp()
+                new_tasks = taskInteraction.selectLatest(self.begin_time,self.end_time)
+                if len(new_tasks)!=0:
+                    print("(Step)add task num:", len(new_tasks))
+                    self.begin_time=self.end_time
+                    # update the base station database if there exists update
+                    self.base_station.updateBSByTasks(new_tasks)
+                    break
         #update the step number:iteration number=1
         self.step_num += 1
         if self.step_num > 100:
