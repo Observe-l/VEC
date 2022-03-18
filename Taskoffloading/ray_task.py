@@ -7,7 +7,7 @@ import random
 
 @ray.remote
 def cal(data: ray.data.Dataset[int],cho1: int, cho2: int, p1: int, p2:int, it_range: int) -> float:
-    start=time.time()
+    # start=time.time()
     z1=0
     z2=0
     for task in data.iter_batches(batch_format="pandas"):
@@ -33,9 +33,9 @@ def cal(data: ray.data.Dataset[int],cho1: int, cho2: int, p1: int, p2:int, it_ra
                 # lg = float(i[0])
                 # cs = float(i[1])
                 # z1 += 3*math.log(lg) + math.cos(cs) ** 2
-    end=time.time()
+    # end=time.time()
     z = p1*z1 + p2*z2
-    print("cal time:",end-start)
+    # print("cal time:",end-start)
     return z
 
 # Execution time: T = Cn / Fs, here, Fs is 7. So Cn = T * 7
@@ -127,6 +127,7 @@ if __name__ == "__main__":
         all_parameter = [random.randint(1,4),random.randint(1,4),random.randint(1,10),random.randint(1,10),round(7/fs*base_iter)]
         task = cal.options(num_cpus=1, resources={vid[int(action)]: 1}).remote(file[n],all_parameter[0],all_parameter[1],all_parameter[2],all_parameter[3],all_parameter[4])
         result = ray.get(task)
+        del task
         end_time = time.time()
         total_time = end_time-start_time
 

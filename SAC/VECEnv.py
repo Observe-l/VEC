@@ -67,6 +67,7 @@ class VECEnv(gym.Env):
         Receive request from Raspberry.#reset = #step + 1
         Pre-training 200 times
         '''
+        self.cal_e = time()
         if self.iteration > 5999:
             self.udp_status = 1
             self.train_step = 0
