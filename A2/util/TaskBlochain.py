@@ -129,7 +129,9 @@ class taskBlockchain():
                 task[i].allocation_basestation_id = float(js_data[i]['Record']['allocation_basestation_id'])
                 task[i].delay = float(js_data[i]['Record']['delay'])
                 task[i].done_status = float(js_data[i]['Record']['done_status'])
-                task[i].vehicle_density = js_data[i]['Record']['vehicle_density']
+                #change the type into dic
+                vehicle_density = js_data[i]['Record']['vehicle_density']
+                task[i].vehicle_density = eval(vehicle_density)
         return task
     def delAllTask(self, startkey="", endkey=""):
         if self.getAllTask()==0:

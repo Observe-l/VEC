@@ -112,7 +112,8 @@ class A2EnvExtreme:
             Ib = int(task.allocation_basestation_id)-1
             #update state 1
             for i in range(self.b):
-                self.baseStations[i].vehicle_density = task.vehicle_density[str(i+1)]
+                print("vehicle_density:",task.vehicle_density)
+                self.baseStations[i].vehicle_density = task.vehicle_density[i+1]
                 print("task"+str(task.id)+"vehicle density near BS"+str(i)+":"+str(self.baseStations[i].vehicle_density))
             self.Gb = self.get_Gb()  # state1 global resource
             

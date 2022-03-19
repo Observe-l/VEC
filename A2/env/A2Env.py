@@ -38,7 +38,7 @@ class A2Env(gym.Env):
         reset the state of the environment
         @return: state
         '''
-        if self.iteration<20:
+        if self.iteration<5000:
             self.base_station = pretrainEnv()
             print("(reset) pretrain iteration=",self.iteration)
         else:
@@ -50,8 +50,8 @@ class A2Env(gym.Env):
         self.observation = np.concatenate([self.base_station.Gb,self.base_station.reliability,self.base_station.Ntr])
         self.done = False
         self.step_num = 0
-
         return self.observation
+
 
     def step(self,action)->tuple:
         '''
@@ -84,13 +84,11 @@ class A2Env(gym.Env):
                     break
         #update the step number:iteration number=1
         self.step_num += 1
-        if self.step_num > 10:
+        if self.step_num > 100:
             self.done = True
         self.observation = np.concatenate([self.base_station.Gb, self.base_station.reliability, self.base_station.Ntr])
         self.iteration+=1
         return self.observation,reward,self.done,{}
-
-
 
     def render(self):
         print("Render flag")
