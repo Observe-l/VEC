@@ -54,8 +54,6 @@ class VECEnv(gym.Env):
         self.udp_status = 0
         self.train_step = 100
         self.mean = [0,0,0,0]
-        self.cal_s = 0
-        self.cal_e = 0
         # TaskSQLUtil.deleteAllTasks()
         # self.reset()
 
@@ -69,7 +67,6 @@ class VECEnv(gym.Env):
         Receive request from Raspberry.#reset = #step + 1
         Pre-training 200 times
         '''
-        self.cal_e = time()
         if self.iteration > 5999:
             self.udp_status = 1
             self.train_step = 0
@@ -77,13 +74,13 @@ class VECEnv(gym.Env):
             mydb.commit()
             end = time()
             print("commit time: ",end-start)
-            self.msg, self.addr = udp_request.receive()
+            self.msg, self.addr = udp_request.receive("request")
             '''
             Request head should be "request". Otherwise, program will exit and print error head packet.
             '''
             while self.msg[0] != "request":
                 print("Request error, error head: ",self.msg[0])
-                self.msg, self.addr = udp_request.receive()
+                self.msg, self.addr = udp_request.receive("request")
             
             # Time stamp - when receive the udp request
             self.start_time = time()
@@ -109,8 +106,6 @@ class VECEnv(gym.Env):
         self.observation = np.concatenate([self.base_station.Fs,self.base_station.rt,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.Tn])
         self.done = False
         self.mean = [0,0,0,0]
-        print("100 steps total time is:", self.cal_e-self.cal_s)
-        self.cal_s =time()
         
         self.step_num = 1
 
@@ -145,7 +140,14 @@ class VECEnv(gym.Env):
                 return self.observation,reward,self.done,{}
 
             # Vehicle will return a "complete" packet, or back to reset function
-            self.msg, self.addr = udp_request.receive()
+            msg, addr = udp_request.receive("complete")
+            while self.addr != addr:
+                print("Bad messages, it should from: ",self.addr, " but it's from: ",addr)
+                msg, addr = udp_request.receive("complete")
+            # Update message and address
+            self.msg = msg
+            self.addr = addr
+
             if self.msg[0] != "complete":
                 print("Complete packet error, error head: ",self.msg[0])
                 reward = 0

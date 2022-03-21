@@ -53,10 +53,10 @@ def send(msg,ip) -> bool:
 Application layer protocal based on UDP
 After UDP server receive a packet, it will return ACK
 '''
-def receive():
+def receive(msg_type: str):
     sk = socket.socket(type=socket.SOCK_DGRAM)
     sk.bind(("",4563))
     msg,addr = udp_server(sk)
-    ack = struct.pack("!i10s10s",2,b"ACK",msg[0].encode())
+    ack = struct.pack("!i10s10s",2,b"ACK",msg_type.encode())
     udp_send(ack, addr)
     return msg, addr

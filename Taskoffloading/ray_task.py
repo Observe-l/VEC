@@ -66,11 +66,11 @@ def get_iter(file_id: int) -> int:
 # select maximum delay of task. Assume that Dn=2.0 Mbps, Cn=5.0GHz
 def get_tau(Dn:float, Cn:float) -> float:
     tau_T = Dn/2.0 + Cn/5.0
-    if tau_T < 0.5:
+    if tau_T < 0.2:
         return 0.5
-    elif tau_T < 1:
+    elif tau_T < 0.7:
         return 1.0
-    elif tau_T < 2:
+    elif tau_T < 1.3:
         return 2.0
     else:
         return 4.0
@@ -119,7 +119,7 @@ if __name__ == "__main__":
             continue
     
         print("sent request to:",Station_IP[bs_id])
-        msg, addr = udp_request.receive()
+        msg, addr = udp_request.receive("offloading")
         print("get return")
         action = msg[1]
         fs = float(msg[2])
