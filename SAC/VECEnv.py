@@ -146,8 +146,8 @@ class VECEnv(gym.Env):
         self.base_station.get_utility(action,tde)
         self.base_station.get_Utility_task(action)
         self.base_station.get_normalized_utility(action)
-        self.base_station.update_completion_ratio(action)
         self.base_station.update_compute_efficiency(action)
+        self.base_station.update_completion_ratio(action)
         self.base_station.update_reliability(action) 
 
         self.step_num+=1

@@ -147,18 +147,19 @@ class SACEnv:
     def update_completion_ratio(self,Vs):
         one = 1 if self.t_delay[Vs]<self.Tn[Vs] else 0
         self.total_received_task[Vs] += 1
-        self.completion_ratio[Vs] = ((self.total_received_task[Vs])*self.completion_ratio[Vs]+one)/self.total_received_task[Vs]
+        self.completion_ratio[Vs] = ((self.total_received_task[Vs])*self.completion_ratio[Vs]+one)/(self.total_received_task[Vs]+1)
         return
 
-    def get_reliability(self,Vs):
-        result = self.omega2 * self.compute_efficiency[Vs] + (1 - self.omega2) * self.completion_ratio[Vs]
-        return result
+    # def get_reliability(self,Vs):
+    #     result = self.omega2 * self.compute_efficiency[Vs] + (1 - self.omega2) * self.completion_ratio[Vs]
+    #     return result
 
     def update_reliability(self,Vs):
         self.get_normalized_utility(Vs)
         self.update_compute_efficiency(Vs)
         self.update_completion_ratio(Vs)
-        self.reliability[Vs] = self.get_reliability(Vs)
+        # self.reliability[Vs] = self.get_reliability(Vs)
+        self.reliability[Vs] = self.omega2 * self.compute_efficiency[Vs] + (1 - self.omega2) * self.completion_ratio[Vs]
         return
     
     def get_density(self,event:str, mydb):
