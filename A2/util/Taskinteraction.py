@@ -62,6 +62,14 @@ class taskInteraction():
     def deleteAllTasks(self):
         self.bchain.delAllTask()
         return
+    
+    def selectAllTasks(self):
+        tasklist=self.bchain.getAllTask()
+        newlist=[]
+        for i,v in enumerate(tasklist):
+            newlist.append(v)
+        return newlist
+
 
 
 if __name__ == '__main__':
@@ -83,12 +91,8 @@ if __name__ == '__main__':
     # task.delay = 5
     # tbc.insert(task)
     # print(tbc.deleteAllTasks())
-    t0='202203171930'
-    time.sleep(2)
-    t1='202203171950'
-    l1 = tbc.selectLatest(t0,t1)
-    print(l1)
-
+    l1=tbc.selectAllTasks()
+    print(len(l1))
 
     
 

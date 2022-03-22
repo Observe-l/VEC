@@ -4,7 +4,6 @@ import gym.spaces
 import numpy as np
 import time
 import sys
-import threading
 sys.path.append(".")
 sys.path.append("..")
 sys.path.append('/home/vec/Documents/VEC/Blockchain/')
@@ -32,6 +31,7 @@ class A2Env(gym.Env):
         self.iteration=0
         self.flag = 1 #pretrain flag
         print("(init)")
+        self.flaginit = 1
         self.reset()
 
     def reset(self):
@@ -39,12 +39,16 @@ class A2Env(gym.Env):
         reset the state of the environment
         @return: state
         '''
-        if self.iteration<5000:
+        if self.flaginit==1:
+            self.base_station = A2EnvExtreme()
+            self.base_station.initialize_state_space()
+            self.flaginit=0
+        if self.iteration<0:
             self.base_station = pretrainEnv()
             print("(reset) pretrain iteration=",self.iteration)
         else:
             self.flag = 0
-            self.base_station = A2EnvExtreme()   #Load the data from the dataset
+            # self.base_station = A2EnvExtreme()   #Load the data from the dataset
             self.begin_time =datetime.now().strftime('%Y%m%d%H%M%S')
             print("(reset) iteration=",self.iteration)
         print([self.base_station.Gb,self.base_station.reliability,self.base_station.Ntr])
@@ -61,10 +65,9 @@ class A2Env(gym.Env):
         @return: tuple of (observation, reward, done, info)
         '''
         #print the base station chosen        # change the anchornode
-        print("(Step)In iteration "+str(self.iteration)+", tbaseStations[i].he consensus node chosen is:",action)
+        print("(Step)In iteration "+str(self.iteration)+", consensus node chosen is:",action)
          # change the anchornode
-        V_delay = threading.Thread(target=anchornode_selection,args=(action,))
-        V_delay.start()
+        V_delay = anchornode_selection(action)
         # V_delay = anchornode_selection(action)
         reward = self.base_station.get_reward(action,V_delay)
         # reward = self.base_station.get_reward(action)
