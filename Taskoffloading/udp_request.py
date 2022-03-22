@@ -15,8 +15,25 @@ def udp_server(sk: socket.socket):
 
 def udp_send(msg,ip):
     sk = socket.socket(type=socket.SOCK_DGRAM)
-    sk.sendto(msg,(ip,4563))
+    sk.sendto(msg,(ip,4563) )
 
+# Control signal udp protocol
+def control_server():
+    sk = socket.socket(type=socket.SOCK_DGRAM)
+    sk.bind(("",4600))
+    rec, cli_addr = sk.recvfrom(1024)
+    msg = []
+    head = struct.unpack("!i",rec[:4])
+    # message fomat: 1.head: string; 2-inf. data: string;
+    for i in range(0,head[0]):
+        msg_tmp = struct.unpack("!10s",rec[10*i+4:10*(i+1)+4])
+        msg.append(msg_tmp[0].decode().rstrip('\x00'))
+    # msg = struct.unpack('!20s20s20s20s',rec)
+    return msg, cli_addr[0]
+
+def control_send(msg,ip):
+    sk = socket.socket(type=socket.SOCK_DGRAM)
+    sk.sendto(msg,(ip,4600))
 
 '''
 Application layer protocal based on UPD

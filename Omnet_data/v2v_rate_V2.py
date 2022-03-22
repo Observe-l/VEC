@@ -1,6 +1,9 @@
 import pymysql
 import numpy as np
 import time
+import udp_request
+import struct
+import random
 ''' 
 Assume Vehicle 0 as Task Vehicle 
 -------------------------------------------------------------------------------------
@@ -294,84 +297,142 @@ ts_vehicle3_table = [[1,	64,	0.43,	0.666,	1.096, 4, 0],
                      [70,	202,	1.536,	1.599,	1.811, 1, 3]
                      ]
 
-db = pymysql.connect(
-     host = "192.168.1.117",
+
+db0 = pymysql.connect(
+     host = "localhost",
      user = "VEC",
      password = "666888",
      database = "SAC",
 )
 
-cursor = db.cursor()
+db1 = pymysql.connect(
+     host = "192.168.1.122",
+     user = "VEC",
+     password = "666888",
+     database = "SAC",
+)
 
-def update_ts_vehicle_table(ts_vehicle, sv_vehicle, local_table, idx, loop_count):
-     # Update data into ts_vehicle
-     event = str(1)
-     sql = "UPDATE " + str(ts_vehicle) + " SET " + str(sv_vehicle) + " = " \
-            + str(local_table[loop_count % (np.shape(ts_vehicle0_table)[0])][idx]) \
-            + " WHERE EVENT = " + event
-     cursor.execute(sql)
+
+
+def update_ts_vehicle_table(ts_vehicle, sv_vehicle, local_table, idx, loop_count, cursor):
+    # Update data into ts_vehicle
+    event = str(1)
+    sql = "UPDATE " + str(ts_vehicle) + " SET " + str(sv_vehicle) + " = " \
+        + str(local_table[loop_count % (np.shape(ts_vehicle0_table)[0])][idx]) \
+        + " WHERE EVENT = " + event
+    cursor.execute(sql)
+
+def update_uti(v0:list, v1:list, v2:list, v3:list, cursor):
+    sql = "UPDATE vehicle_information SET Fs=%s, utilization=%s WHERE ID = %s"
+    cursor.execute(sql,(str(v0[1]),str(v0[2]),str(v0[0])))
+    cursor.execute(sql,(str(v1[1]),str(v1[2]),str(v1[0])))
+    cursor.execute(sql,(str(v2[1]),str(v2[2]),str(v2[0])))
+    cursor.execute(sql,(str(v3[1]),str(v3[2]),str(v3[0])))
 
 # Update data
-loop_count = 0
-while loop_count <= 20000:
-     if loop_count % (np.shape(ts_vehicle0_table)[0]) == 5:
-         pass
-         # In this event, vehicles start just now and not crowded around BS
-         # Task vehicle: vehicle0, others are service vehicles
-         # Vehicle0,2,3 are busy, vehicle1 is free
-         # SAC result: choose vehicle1
+if __name__ == "__main__":
+    loop_count = 0
+    while loop_count <= 20000:
+        # ID, Fs, utilization
 
-         # all vehicles send requests to the BS[0]
-         # DDQN result: BS[1]
+        if loop_count % (np.shape(ts_vehicle0_table)[0]) == 5:
+            # In this event, vehicles start just now and not crowded around BS
+            # Task vehicle: vehicle0, others are service vehicles
+            # Vehicle0,2,3 are busy (90%), vehicle1 is free (3%)
+            # SAC result: choose vehicle1
 
-     if loop_count % (np.shape(ts_vehicle0_table)[0]) == 30:
-         pass
-         # In this event, vehicles are all around BS[0]
-         # Task vehicle: vehicle1, others are service vehicles
-         # Vehicle0,1,3 are busy, vehicle2 is free
-         # SAC result: choose vehicle2
+            # all vehicles send requests to the BS[0]
+            # DDQN result: BS[1]
+            v0=[0, 7.0, 90]
+            v1=[0, 6.5, 3.0]
+            v2=[0, 5.5, 90]
+            v3=[0, 6.3, 90]
+            ts_id = "192.168.1.119"
 
-         # all vehicles send requests to the BS[0]
-         # DDQN result: BS[1]
 
-     if loop_count % (np.shape(ts_vehicle0_table)[0]) == 65:
-         pass
-         # In this event, vehicles are all around BS[1]
-         # Task vehicle: vehicle2, others are service vehicles
-         # Vehicle0,2,3 are busy, vehicle1 is free
-         # SAC result: choose vehicle1
+        elif loop_count % (np.shape(ts_vehicle0_table)[0]) == 30:
+            pass
+            # In this event, vehicles are all around BS[0]
+            # Task vehicle: vehicle1, others are service vehicles
+            # Vehicle0,1,3 are busy, vehicle2 is free
+            # SAC result: choose vehicle2
 
-         # all vehicles send requests to the BS[1]
-         # DDQN result: BS[0]
+            # all vehicles send requests to the BS[0]
+            # DDQN result: BS[1]
+            v0=[0, 7.0, 95]
+            v1=[0, 6.5, 85]
+            v2=[0, 5.5, 6.0]
+            v3=[0, 6.3, 92]
+            ts_id = "192.168.1.121"
 
-     # Update data into ts_vehicle0: V2V_transfer_rate & traffic_density
-     update_ts_vehicle_table("ts_vehicle0", "VEHICLE1", ts_vehicle0_table, 2, loop_count)
-     update_ts_vehicle_table("ts_vehicle0", "VEHICLE2", ts_vehicle0_table, 3, loop_count)
-     update_ts_vehicle_table("ts_vehicle0", "VEHICLE3", ts_vehicle0_table, 4, loop_count)
-     update_ts_vehicle_table("ts_vehicle0", "BS0_DENSITY", ts_vehicle0_table, 5, loop_count)
-     update_ts_vehicle_table("ts_vehicle0", "BS1_DENSITY", ts_vehicle0_table, 6, loop_count)
-     # Update data into ts_vehicle1: V2V_transfer_rate & traffic_density
-     update_ts_vehicle_table("ts_vehicle1", "VEHICLE0", ts_vehicle1_table, 2, loop_count)
-     update_ts_vehicle_table("ts_vehicle1", "VEHICLE2", ts_vehicle1_table, 3, loop_count)
-     update_ts_vehicle_table("ts_vehicle1", "VEHICLE3", ts_vehicle1_table, 4, loop_count)
-     update_ts_vehicle_table("ts_vehicle1", "BS0_DENSITY", ts_vehicle1_table, 5, loop_count)
-     update_ts_vehicle_table("ts_vehicle1", "BS1_DENSITY", ts_vehicle1_table, 6, loop_count)
-     # Update data into ts_vehicle2: V2V_transfer_rate & traffic_density
-     update_ts_vehicle_table("ts_vehicle2", "VEHICLE0", ts_vehicle2_table, 2, loop_count)
-     update_ts_vehicle_table("ts_vehicle2", "VEHICLE1", ts_vehicle2_table, 3, loop_count)
-     update_ts_vehicle_table("ts_vehicle2", "VEHICLE3", ts_vehicle2_table, 4, loop_count)
-     update_ts_vehicle_table("ts_vehicle2", "BS0_DENSITY", ts_vehicle2_table, 5, loop_count)
-     update_ts_vehicle_table("ts_vehicle2", "BS1_DENSITY", ts_vehicle2_table, 6, loop_count)
-     # Update data into ts_vehicle3
-     update_ts_vehicle_table("ts_vehicle3", "VEHICLE0", ts_vehicle3_table, 2, loop_count)
-     update_ts_vehicle_table("ts_vehicle3", "VEHICLE1", ts_vehicle3_table, 3, loop_count)
-     update_ts_vehicle_table("ts_vehicle3", "VEHICLE2", ts_vehicle3_table, 4, loop_count)
-     update_ts_vehicle_table("ts_vehicle3", "BS0_DENSITY", ts_vehicle3_table, 5, loop_count)
-     update_ts_vehicle_table("ts_vehicle3", "BS1_DENSITY", ts_vehicle3_table, 6, loop_count)
-     # increase loop_count
-     loop_count += 1
-     # time delay
-     db.commit()
-     time.sleep(2)
-     print("Update Successfully")
-db.close()
+        elif loop_count % (np.shape(ts_vehicle0_table)[0]) == 65:
+            pass
+            # In this event, vehicles are all around BS[1]
+            # Task vehicle: vehicle3, others are service vehicles
+            # Vehicle0,2,3 are busy, vehicle1 is free
+            # SAC result: choose vehicle1
+
+            # all vehicles send requests to the BS[1]
+            # DDQN result: BS[0]
+            v0=[0, 7.0, 95]
+            v1=[0, 6.5, 8]
+            v2=[0, 5.5, 84]
+            v3=[0, 6.3, 92]
+            ts_id = "192.168.1.124"
+        else:
+            v0=[0, 7.0, 5.0]
+            v1=[0, 6.5, 5.0]
+            v2=[0, 5.5, 5.0]
+            v3=[0, 6.3, 5.0]
+            ts_id = random.choice(["192.168.1.119","192.168.1.121","192.168.1.124"])
+        
+        if loop_count % (np.shape(ts_vehicle0_table)[0]) > 35:
+            bs_id= "1"
+            db = db1
+        else:
+            bs_id= "0"
+            db = db0
+        
+
+        cursor = db.cursor()
+        # Update vehicla utlizaiton
+        update_uti(v0,v1,v2,v3,cursor)
+
+
+        # Update data into ts_vehicle0: V2V_transfer_rate & traffic_density
+        update_ts_vehicle_table("ts_vehicle0", "VEHICLE1", ts_vehicle0_table, 2, loop_count,cursor)
+        update_ts_vehicle_table("ts_vehicle0", "VEHICLE2", ts_vehicle0_table, 3, loop_count,cursor)
+        update_ts_vehicle_table("ts_vehicle0", "VEHICLE3", ts_vehicle0_table, 4, loop_count,cursor)
+        update_ts_vehicle_table("ts_vehicle0", "BS0_DENSITY", ts_vehicle0_table, 5, loop_count,cursor)
+        update_ts_vehicle_table("ts_vehicle0", "BS1_DENSITY", ts_vehicle0_table, 6, loop_count,cursor)
+        # Update data into ts_vehicle1: V2V_transfer_rate & traffic_density
+        update_ts_vehicle_table("ts_vehicle1", "VEHICLE0", ts_vehicle1_table, 2, loop_count,cursor)
+        update_ts_vehicle_table("ts_vehicle1", "VEHICLE2", ts_vehicle1_table, 3, loop_count,cursor)
+        update_ts_vehicle_table("ts_vehicle1", "VEHICLE3", ts_vehicle1_table, 4, loop_count,cursor)
+        update_ts_vehicle_table("ts_vehicle1", "BS0_DENSITY", ts_vehicle1_table, 5, loop_count,cursor)
+        update_ts_vehicle_table("ts_vehicle1", "BS1_DENSITY", ts_vehicle1_table, 6, loop_count,cursor)
+        # Update data into ts_vehicle2: V2V_transfer_rate & traffic_density
+        update_ts_vehicle_table("ts_vehicle2", "VEHICLE0", ts_vehicle2_table, 2, loop_count,cursor)
+        update_ts_vehicle_table("ts_vehicle2", "VEHICLE1", ts_vehicle2_table, 3, loop_count,cursor)
+        update_ts_vehicle_table("ts_vehicle2", "VEHICLE3", ts_vehicle2_table, 4, loop_count,cursor)
+        update_ts_vehicle_table("ts_vehicle2", "BS0_DENSITY", ts_vehicle2_table, 5, loop_count,cursor)
+        update_ts_vehicle_table("ts_vehicle2", "BS1_DENSITY", ts_vehicle2_table, 6, loop_count,cursor)
+        # Update data into ts_vehicle3
+        update_ts_vehicle_table("ts_vehicle3", "VEHICLE0", ts_vehicle3_table, 2, loop_count,cursor)
+        update_ts_vehicle_table("ts_vehicle3", "VEHICLE1", ts_vehicle3_table, 3, loop_count,cursor)
+        update_ts_vehicle_table("ts_vehicle3", "VEHICLE2", ts_vehicle3_table, 4, loop_count,cursor)
+        update_ts_vehicle_table("ts_vehicle3", "BS0_DENSITY", ts_vehicle3_table, 5, loop_count,cursor)
+        update_ts_vehicle_table("ts_vehicle3", "BS1_DENSITY", ts_vehicle3_table, 6, loop_count,cursor)
+        
+        
+        # time delay
+        db.commit()
+        control_msg = struct.pack("!i10s10s",2,b"control",bs_id.encode())
+        udp_request.control_send(control_msg,ts_id)
+        print("Task vehicle is:",ts_id,"Choose base station ",bs_id)
+        time.sleep(2)
+
+        # print("Update Successfully")
+        # increase loop_count
+        loop_count += 1
+    db.close()
