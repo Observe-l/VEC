@@ -21,6 +21,7 @@ type SimpleAsset struct {
 }
 type BaseStation struct {
 	ID                                          string  `json:"id"`
+	CPU_UTIL									float64 `json: "cpu_util"`
 	TOTAL_MEMORY                         		float64 `json:"total_memory"`
 	FREE_MEMORY                          		float64 `json:"free_memory"`
 }
@@ -31,19 +32,23 @@ type BaseStation struct {
 func (t *SimpleAsset) Init(stub shim.ChaincodeStubInterface) peer.Response {
 	// Get the args from the transaction proposal
 	args := stub.GetStringArgs()
-	if len(args) != 3 {
+	if len(args) != 4 {
 		return shim.Error("Incorrect arguments. Expecting a key and a value")
 	}
 	ID := args[0]
-	tm, err := strconv.ParseFloat(args[1], 64)
+	cu, err := strconv.ParseFloat(args[1], 64)
+	if err != nil {
+		return shim.Error("CPU utilization input error")
+	}
+	tm, err := strconv.ParseFloat(args[2], 64)
 	if err != nil {
 		return shim.Error("Total Memory input error")
 	}
-	fm, err := strconv.ParseFloat(args[2], 64)
+	fm, err := strconv.ParseFloat(args[3], 64)
 	if err != nil {
 		return shim.Error("Free Memory input error")
 	}
-	basestation := &BaseStation{ID, tm, fm}
+	basestation := &BaseStation{ID, cu, tm, fm}
 	bsJSONasBytes, err := json.Marshal(basestation)
 	if err != nil {
 		return shim.Error(err.Error())
@@ -86,19 +91,23 @@ func (t *SimpleAsset) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 // Set stores the asset (both key and value) on the ledger. If the key exists,
 // it will override the value with the new one
 func (t *SimpleAsset) set(stub shim.ChaincodeStubInterface, args []string) peer.Response {
-	if len(args) != 3 {
+	if len(args) != 4 {
 		return shim.Error("Incorrect arguments. Expecting a key and a value")
 	}
 	ID := args[0]
-	tm, err := strconv.ParseFloat(args[1], 64)
+	cu, err := strconv.ParseFloat(args[1], 64)
+	if err != nil {
+		return shim.Error("CPU utilization input error")
+	}
+	tm, err := strconv.ParseFloat(args[2], 64)
 	if err != nil {
 		return shim.Error("Total Memory input error")
 	}
-	fm, err := strconv.ParseFloat(args[2], 64)
+	fm, err := strconv.ParseFloat(args[3], 64)
 	if err != nil {
 		return shim.Error("Free Memory input error")
 	}
-	basestation := &BaseStation{ID, tm, fm}
+	basestation := &BaseStation{ID, cu, tm, fm}
 	bsJSONasBytes, err := json.Marshal(basestation)
 	if err != nil {
 		return shim.Error(err.Error())

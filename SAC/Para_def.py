@@ -131,7 +131,7 @@ class SACEnv:
     def update_completion_ratio(self,Vs):
         one = 1 if self.t_delay[Vs]<self.Tn[Vs] else 0
         self.total_received_task[Vs] += 1
-        self.completion_ratio[Vs] = ((self.total_received_task[Vs])*self.completion_ratio[Vs]+one)/self.total_received_task[Vs]
+        self.completion_ratio[Vs] = ((self.total_received_task[Vs])*self.completion_ratio[Vs]+one)/(self.total_received_task[Vs]+1)
         return
 
     def get_reliability(self,Vs):

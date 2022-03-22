@@ -144,5 +144,5 @@ if __name__ == "__main__":
             event = 1
             print("Completed all of the events")
         print("#",n," task is completed by: ",vid[int(action)])
-        print("Total time: ",total_time)
+        print("Total time: ",total_time,"\n")
         time.sleep(1)
