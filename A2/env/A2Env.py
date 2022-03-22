@@ -61,7 +61,7 @@ class A2Env(gym.Env):
         @return: tuple of (observation, reward, done, info)
         '''
         #print the base station chosen        # change the anchornode
-        print("(Step)In iteration "+str(self.iteration)+", the consensus node chosen is:",action)
+        print("(Step)In iteration "+str(self.iteration)+", tbaseStations[i].he consensus node chosen is:",action)
          # change the anchornode
         V_delay = threading.Thread(target=anchornode_selection,args=(action,))
         V_delay.start()

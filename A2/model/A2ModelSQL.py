@@ -3,7 +3,8 @@ from util.BaseStation import *
 import numpy as np
 from util.BaseStationTransfer import *
 from util.TaskSQLUtil import *
-
+from util.systeminfo import systeminfo
+from util.systeminfo import BSCPU
 import numpy as np
 
 
@@ -45,7 +46,11 @@ class A2EnvExtreme:
         @return: available computing resource
         '''
         # print(self.baseStations[0].vehicle_density)
-        Gb = np.array([self.baseStations[i].global_computing_resource - (self.baseStations[i].reserved_computing_resource +self.u * float(self.baseStations[i].vehicle_density)) for i in range(self.b)])
+        sysinfo = systeminfo()
+        bscpu=sysinfo.getAllTask()
+        self.global_computing_resource = [100 for i in bscpu]
+        self.reserved_computing_resource = [i.cpu for i in bscpu]
+        Gb = np.array([self.global_computing_resource[i] - (self.reserved_computing_resource[i] +self.u * float(self.baseStations[i].vehicle_density)) for i in range(self.b)])
         return Gb
 
     def get_Ntr(self,num):
