@@ -313,7 +313,6 @@ db1 = pymysql.connect(
 )
 
 
-
 def update_ts_vehicle_table(ts_vehicle, sv_vehicle, local_table, idx, loop_count, cursor):
     # Update data into ts_vehicle
     event = str(1)
@@ -400,24 +399,28 @@ if __name__ == "__main__":
 
 
         # Update data into ts_vehicle0: V2V_transfer_rate & traffic_density
+        update_ts_vehicle_table("ts_vehicle0", "send_time", ts_vehicle0_table, 1, loop_count, cursor)
         update_ts_vehicle_table("ts_vehicle0", "VEHICLE1", ts_vehicle0_table, 2, loop_count,cursor)
         update_ts_vehicle_table("ts_vehicle0", "VEHICLE2", ts_vehicle0_table, 3, loop_count,cursor)
         update_ts_vehicle_table("ts_vehicle0", "VEHICLE3", ts_vehicle0_table, 4, loop_count,cursor)
         update_ts_vehicle_table("ts_vehicle0", "BS0_DENSITY", ts_vehicle0_table, 5, loop_count,cursor)
         update_ts_vehicle_table("ts_vehicle0", "BS1_DENSITY", ts_vehicle0_table, 6, loop_count,cursor)
         # Update data into ts_vehicle1: V2V_transfer_rate & traffic_density
+        update_ts_vehicle_table("ts_vehicle1", "send_time", ts_vehicle0_table, 1, loop_count, cursor)
         update_ts_vehicle_table("ts_vehicle1", "VEHICLE0", ts_vehicle1_table, 2, loop_count,cursor)
         update_ts_vehicle_table("ts_vehicle1", "VEHICLE2", ts_vehicle1_table, 3, loop_count,cursor)
         update_ts_vehicle_table("ts_vehicle1", "VEHICLE3", ts_vehicle1_table, 4, loop_count,cursor)
         update_ts_vehicle_table("ts_vehicle1", "BS0_DENSITY", ts_vehicle1_table, 5, loop_count,cursor)
         update_ts_vehicle_table("ts_vehicle1", "BS1_DENSITY", ts_vehicle1_table, 6, loop_count,cursor)
         # Update data into ts_vehicle2: V2V_transfer_rate & traffic_density
+        update_ts_vehicle_table("ts_vehicle2", "send_time", ts_vehicle0_table, 1, loop_count, cursor)
         update_ts_vehicle_table("ts_vehicle2", "VEHICLE0", ts_vehicle2_table, 2, loop_count,cursor)
         update_ts_vehicle_table("ts_vehicle2", "VEHICLE1", ts_vehicle2_table, 3, loop_count,cursor)
         update_ts_vehicle_table("ts_vehicle2", "VEHICLE3", ts_vehicle2_table, 4, loop_count,cursor)
         update_ts_vehicle_table("ts_vehicle2", "BS0_DENSITY", ts_vehicle2_table, 5, loop_count,cursor)
         update_ts_vehicle_table("ts_vehicle2", "BS1_DENSITY", ts_vehicle2_table, 6, loop_count,cursor)
         # Update data into ts_vehicle3
+        update_ts_vehicle_table("ts_vehicle3", "send_time", ts_vehicle0_table, 1, loop_count, cursor)
         update_ts_vehicle_table("ts_vehicle3", "VEHICLE0", ts_vehicle3_table, 2, loop_count,cursor)
         update_ts_vehicle_table("ts_vehicle3", "VEHICLE1", ts_vehicle3_table, 3, loop_count,cursor)
         update_ts_vehicle_table("ts_vehicle3", "VEHICLE2", ts_vehicle3_table, 4, loop_count,cursor)

@@ -98,7 +98,7 @@ class VECEnv(gym.Env):
             
         else:
             vehicle_ID = str(random.randint(0,3))
-            event_ID = 1
+            event_ID = "1"
             self.msg = ["request",vehicle_ID, event_ID]
     
         self.base_station.get_Fs(mydb)
