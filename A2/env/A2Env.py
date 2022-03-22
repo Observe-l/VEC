@@ -4,6 +4,7 @@ import gym.spaces
 import numpy as np
 import time
 import sys
+import threading
 sys.path.append(".")
 sys.path.append("..")
 sys.path.append('/home/vec/Documents/VEC/Blockchain/')
@@ -62,7 +63,9 @@ class A2Env(gym.Env):
         #print the base station chosen        # change the anchornode
         print("(Step)In iteration "+str(self.iteration)+", the consensus node chosen is:",action)
          # change the anchornode
-        V_delay = anchornode_selection(action)
+        V_delay = threading.Thread(target=anchornode_selection,args=(action,))
+        V_delay.start()
+        # V_delay = anchornode_selection(action)
         reward = self.base_station.get_reward(action,V_delay)
         # reward = self.base_station.get_reward(action)
         #pretrain the model
