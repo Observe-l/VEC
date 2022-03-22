@@ -144,11 +144,11 @@ if __name__ == "__main__":
         # Send complete packet to SAC
         complete_msg = struct.pack('!i10s10s10s10s',4,b'complete',tv_id.encode(),str(total_time).encode(),status.encode())
         udp_request.send(complete_msg,Station_IP[bs_id])
-        if event < 14:
-            event += 1
-        else:
-            event = 1
-            print("Completed all of the events")
+        # if event < 14:
+        #     event += 1
+        # else:
+        #     event = 1
+        #     print("Completed all of the events")
         print("#",n," task is completed by: ",vid[int(action)])
         print("Total time: ",total_time,"\n")
         time.sleep(1)
