@@ -28,7 +28,7 @@ class SACEnv:
         self.u = 0.1
         self.D_size = 3.5 * np.ones(s)
         self.C_size = 3.2 * np.ones(s)
-        self.lam = -10
+        self.lam = -5
         self.Tn = 2 * np.ones(s)
         self.pn = 0.1
         # self.Vehicle_density = self.get_vehicle_density()
