@@ -28,8 +28,8 @@ class SACEnv:
         self.u = 0.1
         self.D_size = 3.5 * np.ones(s)
         self.C_size = 3.2 * np.ones(s)
-        self.lam = -10
-        self.Tn = 10 * np.ones(s)
+        self.lam = -5
+        self.Tn = 2 * np.ones(s)
         self.pn = 0.1
         # self.Vehicle_density = self.get_vehicle_density()
         self.t_delay = np.zeros(s)
@@ -39,73 +39,57 @@ class SACEnv:
         self.normalized_utility = np.zeros(s)
 
         self.compute_efficiency = np.zeros(s)
-        self.omega1 = 0.2  #range from[0,1]
+        self.omega1 = 0.8  #range from[0,1]
         self.completion_ratio = np.zeros(s)
         self.total_received_task = np.zeros(s)
-        self.omega2 = 0.2
-        # self.reliability = self.get_reliability()
-
+        self.omega2 = 0.8
+        self.id = []
+        for i in range(self.s):
+            self.id.append(i)
 
         self.reliability = np.zeros(s)
 
-
-
         #simulation data
-        self.Fs = self.get_Fs()
-        self.snr = self.get_snr()
+        self.Fs = np.zeros(s)
+        self.rt = np.zeros(s)
         self.link_dur = self.get_link_dur()
 
-    def get_Fs(self):
-        Fs = [3.5,3.8,4.5,6.8]
-        # return np.random.uniform(3, 7,(self.s,))
-        return Fs
+    def get_rate(self,task_ID:str, event_ID:str, mydb):
+        table = "ts_vehicle" + task_ID
+        sql_cmd = "select * from " + table + " WHERE EVENT = " + event_ID
+        data=pd.read_sql(sql_cmd,mydb)
+        for index, row in data.iterrows():
+            for n in range(self.s):
+                if n == int(task_ID):
+                    self.rt[n] = 99
+                else:
+                    vehicle = "VEHICLE" + str(n)
+                    self.rt[n] = float(row[vehicle])
+        print("task vehicle is:",task_ID,", event id is:", event_ID,", rate:",self.rt)
 
-    def get_snr(self):
         return np.random.uniform(1, 6,(self.s,))
+    
+    def get_Fs(self, mydb):
+        sql_cmd = "select * from vehicle_information"
+        data=pd.read_sql(sql_cmd,mydb)
+        n = 0
+        for index, row in data.iterrows():
+            self.Fs[n] = float(row['Fs']) * (100-float(row['utilization'])) / 100
+            n += 1
 
     def get_link_dur(self):
         l_dur = [10,10,10,10]
         # return np.random.uniform(2, 5,(self.s,))
         return l_dur
 
-    def get_t_delay(self, Vs:int, task_ID:str, event_ID:str, t2:str, mydb):
-        # a = np.random.uniform(0.1, 0.5)
-        # b = np.random.uniform(5, 10)
-        # c = np.random.uniform(8, 18)
-        # a1 = np.float32(a)
-        # b1 = np.float32(b)
-        # c1 = np.float32(c)
-        # return np.array([a1, b1, c1])
-        # return np.random.uniform(1, 13, (self.s,))
-        # tdelay = np.zeros(4)
-        sv = str(Vs)
-        if sv == task_ID:
-            tde = float(t2)
-        else:
-            vehicle = "vehicle" + str(Vs)
-            table = "ts_vehicle" + task_ID
-            delaycmd = "select " + vehicle + " from " + table + " WHERE EVENT = " + event_ID
-            transmission = np.float32(pd.read_sql(delaycmd, mydb))
-            tde = self.D_size[Vs]/transmission + float(t2)
-            
+    def get_t_delay(self, Vs:int,t2:str):
+        tde = self.D_size[Vs]/self.rt[Vs] + float(t2)
         self.t_delay[Vs] = tde
-        # tde = np.array(tdelay)
-        # tde1 = np.float32(tde)
-        # return tde1.reshape((4,))
         return tde
     
     # Before receive real data from RPi, use some random data traing 200 times
-    def pre_training(self, Vs:int, task_ID:str, event_ID:str, mydb):
-        sv = str(Vs)
-        if sv == task_ID:
-            tde = self.C_size[Vs]/self.Fs[Vs]
-        else:
-            vehicle = "vehicle" + str(Vs)
-            table = "ts_vehicle" + task_ID
-            delaycmd = "select " + vehicle + " from " + table + " WHERE EVENT = " + event_ID
-            transmission = np.float32(pd.read_sql(delaycmd, mydb))
-            tde = self.D_size[Vs]/transmission + self.C_size[Vs]/self.Fs[Vs]
-
+    def pre_training(self, Vs:int):
+        tde = self.D_size[Vs]/self.rt[Vs] + self.C_size[Vs]/self.Fs[Vs]
         self.t_delay[Vs] = tde
         return tde
 
@@ -150,17 +134,17 @@ class SACEnv:
         self.completion_ratio[Vs] = ((self.total_received_task[Vs])*self.completion_ratio[Vs]+one)/(self.total_received_task[Vs]+1)
         return
 
-    # def get_reliability(self,Vs):
-    #     result = self.omega2 * self.compute_efficiency[Vs] + (1 - self.omega2) * self.completion_ratio[Vs]
-    #     return result
-
-    def update_reliability(self,Vs):
-        self.get_normalized_utility(Vs)
-        self.update_compute_efficiency(Vs)
-        self.update_completion_ratio(Vs)
-        # self.reliability[Vs] = self.get_reliability(Vs)
+    def get_reliability(self,Vs):
         self.reliability[Vs] = self.omega2 * self.compute_efficiency[Vs] + (1 - self.omega2) * self.completion_ratio[Vs]
         return
+        # return result
+
+    # def update_reliability(self,Vs):
+    #     self.get_normalized_utility(Vs)
+    #     self.update_compute_efficiency(Vs)
+    #     self.update_completion_ratio(Vs)
+    #     self.reliability[Vs] = self.get_reliability(Vs)
+    #     return
     
     def get_density(self,event:str, mydb):
         sql_cmd = "select BS0_DENSITY, BS1_DENSITY from ts_vehicle0 where EVENT=" + event

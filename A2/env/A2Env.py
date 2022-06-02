@@ -4,12 +4,17 @@ import gym.spaces
 import numpy as np
 import time
 import sys
+sys.path.append(".")
 sys.path.append("..")
+sys.path.append('/home/vec/Documents/VEC/Blockchain/')
+sys.path.append("/home/vec/Documents/VEC/A2/util/")
 # from model.A2ModelSQL import A2EnvExtreme
 from model.A2ModelSQL import A2EnvExtreme
-from util.TaskSQLUtil import countAll,getFirstId,getLastId
+from model.pretrainEnv import pretrainEnv
+# from util.TaskSQLUtil import countAll,getFirstId,getLastId
 from util.BSSQLUtil import *
-from Blockchain.anchornode_select import anchornode_selection
+from anchornode_select import anchornode_selection
+from util.Taskinteraction import taskInteraction
 
 class A2Env(gym.Env):
     def __init__(self,env_config):
@@ -23,10 +28,10 @@ class A2Env(gym.Env):
         observation_array_max = np.append([100.5 for i in range(self.b)],[10.0 for i in range(self.b)])
         observation_array_max = np.append(observation_array_max,[10.0])
         self.observation_space = gym.spaces.box.Box(observation_array_min,observation_array_max,dtype=np.float32)
-        # TODO:add reset the task table
-        self.task_id=getFirstId()
         self.iteration=0
-        print("(Init)initial task id:",self.task_id)
+        self.flag = 1 #pretrain flag
+        print("(init)")
+        self.flaginit = 1
         self.reset()
 
     def reset(self):
@@ -34,13 +39,24 @@ class A2Env(gym.Env):
         reset the state of the environment
         @return: state
         '''
-        self.base_station = A2EnvExtreme()   #Load the data from the dataset
+        if self.flaginit==1:
+            self.base_station = A2EnvExtreme()
+            self.base_station.initialize_state_space()
+            self.flaginit=0
+        if self.iteration<0:
+            self.base_station = pretrainEnv()
+            print("(reset) pretrain iteration=",self.iteration)
+        else:
+            self.flag = 0
+            # self.base_station = A2EnvExtreme()   #Load the data from the dataset
+            self.begin_time =datetime.now().strftime('%Y%m%d%H%M%S')
+            print("(reset) iteration=",self.iteration)
+        print([self.base_station.Gb,self.base_station.reliability,self.base_station.Ntr])
         self.observation = np.concatenate([self.base_station.Gb,self.base_station.reliability,self.base_station.Ntr])
         self.done = False
         self.step_num = 0
-        self.begin_time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f") #2017-09-20T12:59:43.888955
-
         return self.observation
+
 
     def step(self,action)->tuple:
         '''
@@ -48,29 +64,30 @@ class A2Env(gym.Env):
         @param action: take action selected by agent(range from[0,num of base station],Sbk)
         @return: tuple of (observation, reward, done, info)
         '''
-
-        #print the base station chosen
-        reward = self.base_station.get_reward(action)
-        # change the anchornode
-        anchornode_selection(action)
-        print("(Step)In iteration "+str(self.iteration)+", the consensus node chosen is:",action)
-        # wait for the sql to add data
-        while True:
-            time.sleep(2)
-            # count the total number of tasks
-            temp_task_id = getLastId()
-            print("(Reset)Current task num:", temp_task_id)
-            # load the number of tasks
-            # update the base station database if there exists update
-            if temp_task_id != self.task_id:
-                diff = temp_task_id - self.task_id
-                print("(Reset)insert tasks num:", diff)
-                self.task_id = temp_task_id
-                self.base_station.updateBSByTasks(diff)
-                break
-        self.observation = np.concatenate([self.base_station.Gb, self.base_station.reliability, self.base_station.Ntr])
-        # reward=self.base_station.get_reward(action[0],action[1])
-              #update the state of chosen base station
+        #print the base station chosen        # change the anchornode
+        print("(Step)In iteration "+str(self.iteration)+", consensus node chosen is:",action)
+         # change the anchornode
+        V_delay = anchornode_selection(action)
+        # V_delay = anchornode_selection(action)
+        reward = self.base_station.get_reward(action,V_delay)
+        # reward = self.base_station.get_reward(action)
+        #pretrain the model
+        if self.flag==1:
+            num = np.random.randint(0,5)
+            self.base_station.updataBSByTasks(num)
+        else:
+            # wait for the blockchain to add data
+            while True:
+                time.sleep(2)
+                self.end_time = datetime.now().strftime('%Y%m%d%H%M%S')
+                tI=taskInteraction()
+                new_tasks = tI.selectLatest(self.begin_time,self.end_time)
+                if new_tasks!=0:
+                    print("(Step)add task num:", len(new_tasks))
+                    self.begin_time=self.end_time
+                    # update the base station database if there exists update
+                    self.base_station.updateBSByTasks(new_tasks)
+                    break
         #update the step number:iteration number=1
         self.step_num += 1
         if self.step_num > 100:
@@ -78,8 +95,6 @@ class A2Env(gym.Env):
         self.observation = np.concatenate([self.base_station.Gb, self.base_station.reliability, self.base_station.Ntr])
         self.iteration+=1
         return self.observation,reward,self.done,{}
-
-
 
     def render(self):
         print("Render flag")

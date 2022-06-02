@@ -37,7 +37,7 @@ services:
       - CORE_PEER_CHAINCODEADDRESS=peer4.ray.com:7052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
       - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.ray.com:7051
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer4_end.ray.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer4.ray.com:7051
       - CORE_PEER_LOCALMSPID=RayMSP
       - CORE_OPERATIONS_LISTENADDRESS=peer4.ray.com:9444
       - CORE_METRICS_PROVIDER=prometheus
@@ -59,8 +59,8 @@ services:
     extra_hosts:
       - "orderer.gcp.com:192.168.1.117"
       - "peer0.ray.com:192.168.1.117"
-      - "peer4_end.ray.com:192.168.1.115"
-
+      - "peer1.ray.com:192.168.1.122"
+      - "peer2.ray.com:192.168.1.125"
 
   cli1:
     container_name: cli1
@@ -93,6 +93,8 @@ services:
     extra_hosts:
       - "orderer.gcp.com:192.168.1.117"
       - "peer0.ray.com:192.168.1.117"
+      - "peer1.ray.com:192.168.1.122"
+      - "peer2.ray.com:192.168.1.125"
     networks:
       - test
  

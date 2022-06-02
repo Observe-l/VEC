@@ -40,7 +40,6 @@ class taskBlockchain():
 
         # Execute the docker command
         result1 = self.client.exec_start(id1).decode()
-        print("congratulations! the task has been added to the blockchain")
 
     # Get one data from ledged. Recommde use mul_get function to get two or more data.
     # This function will return a class
@@ -130,7 +129,9 @@ class taskBlockchain():
                 task[i].allocation_basestation_id = float(js_data[i]['Record']['allocation_basestation_id'])
                 task[i].delay = float(js_data[i]['Record']['delay'])
                 task[i].done_status = float(js_data[i]['Record']['done_status'])
-                task[i].vehicle_density = js_data[i]['Record']['vehicle_density']
+                #change the type into dic
+                vehicle_density = js_data[i]['Record']['vehicle_density']
+                task[i].vehicle_density = eval(vehicle_density)
         return task
     def delAllTask(self, startkey="", endkey=""):
         if self.getAllTask()==0:
@@ -146,15 +147,17 @@ class taskBlockchain():
 
 if __name__ == '__main__':
     bchain=taskBlockchain()
-    # task=Task()
-    # task.id="123"
-    # task.offload_vehicle_id = 567
-    # task.service_vehicle_id = 9877
-    # task.allocation_basestation_id = 2
-    # task.done_status = 1
-    # task.vehicle_density = "{2:3, 1:2}"
-    # task.delay = 5
-    # bchain.update(task)
+    l1 = bchain.getAllTask()
+    print(l1[0])
+    task=Task()
+    task.id="bssdwsadwad1-"+"15032022dafsedqwer23131231170958"
+    task.offload_vehicle_id = 567
+    task.service_vehicle_id = 9877
+    task.allocation_basestation_id = 2
+    task.done_status = 1
+    task.vehicle_density = "{2:3, 1:2}"
+    task.delay = 5
+    bchain.update(task)
     # bchain.delByID("123")
     # bchain.delAllTask()
     # tasklist=bchain.getAllTask()

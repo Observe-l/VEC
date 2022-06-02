@@ -1,7 +1,9 @@
 import docker
 import string
+import time
 
 def anchornode_selection(node):
+    t0 = time.time()
     client=docker.APIClient(base_url='unix:///var/run/docker.sock')
     cmd="mkdir channel-artifacts1"
     output=client.exec_create('cli1',cmd)
@@ -94,14 +96,21 @@ def anchornode_selection(node):
         +"github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/gcp.com/msp/tlscacerts/tlsca.gcp.com-cert.pem\""
     output=client.exec_create('cli1',cmd)
     result=client.exec_start(output).decode()
+    t1=time.time()-t0
+
+    print("consensus_time:",t1)
+    return t1
 
 if __name__ == '__main__':
-    b_id =0
-    if b_id==0:
-        anchornode_selection("peer0.ray.com")
-    elif b_id==2:
-        anchornode_selection("peer1.ray.com")
-    elif b_id==3:
-        anchornode_selection("peer2.ray.com")
-    else:
-        anchornode_selection("peer4.ray.com")
+    # b_id =0
+    # if b_id==0:
+    #     print("time: {}".format(anchornode_selection("peer0.ray.com")))
+    # elif b_id==2:
+    #     print("time: {}".format(anchornode_selection("peer1.ray.com")))
+    # elif b_id==3:
+    #     print("time: {}".format(anchornode_selection("peer2.ray.com")))
+    # else:
+    #     print("time: {}".format(anchornode_selection("peer4.ray.com")))
+    t1 = anchornode_selection(3)
+    print(t1)
+    

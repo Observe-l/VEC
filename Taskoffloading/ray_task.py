@@ -7,7 +7,7 @@ import random
 
 @ray.remote
 def cal(data: ray.data.Dataset[int],cho1: int, cho2: int, p1: int, p2:int, it_range: int) -> float:
-    start=time.time()
+    # start=time.time()
     z1=0
     z2=0
     for task in data.iter_batches(batch_format="pandas"):
@@ -33,9 +33,9 @@ def cal(data: ray.data.Dataset[int],cho1: int, cho2: int, p1: int, p2:int, it_ra
                 # lg = float(i[0])
                 # cs = float(i[1])
                 # z1 += 3*math.log(lg) + math.cos(cs) ** 2
-    end=time.time()
+    # end=time.time()
     z = p1*z1 + p2*z2
-    print("cal time:",end-start)
+    # print("cal time:",end-start)
     return z
 
 # Execution time: T = Cn / Fs, here, Fs is 7. So Cn = T * 7
@@ -66,11 +66,11 @@ def get_iter(file_id: int) -> int:
 # select maximum delay of task. Assume that Dn=2.0 Mbps, Cn=5.0GHz
 def get_tau(Dn:float, Cn:float) -> float:
     tau_T = Dn/2.0 + Cn/5.0
-    if tau_T < 0.5:
+    if tau_T < 0.2:
         return 0.5
-    elif tau_T < 1:
+    elif tau_T < 0.7:
         return 1.0
-    elif tau_T < 2:
+    elif tau_T < 1.3:
         return 2.0
     else:
         return 4.0
@@ -105,21 +105,27 @@ if __name__ == "__main__":
         # Choose some task randomly
         base_iter = get_iter(n)
         Cn = str(cal_cn(n,base_iter))
-        tau_n = get_tau(Dn[n],Cn)
-        bs_id = random.randint(0,1)
+        tau_n = get_tau(float(Dn[n]),float(Cn))
+
+        # Assign Task_vehicle, select base station
+        print("Waiting for control signal")
+        msg, addr = udp_request.control_server()
+        bs_id = int(msg[1])
+        print("I am task vehicle, send request to basestation ",bs_id)
         # bs_id = 1
         start_time = time.time()
         '''Send request to SAC until SAC return a "offloading" packet '''
-        requset_msg = struct.pack("!i10s10s10s10s10s10s",6,b"request",tv_id.encode(),str(event).encode(),Dn[n].encode(),Cn[n].encode(),str(tau_n).encode())
+        requset_msg = struct.pack("!i10s10s10s10s10s10s",6,b"request",tv_id.encode(),str(event).encode(),Dn[n].encode(),Cn.encode(),str(tau_n).encode())
         status = udp_request.send(requset_msg,Station_IP[bs_id])
 
-        if status == False:
+        while status == False:
             print("Send request fail")
             time.sleep(1)
-            continue
+            requset_msg = struct.pack("!i10s10s10s10s10s10s",6,b"request",tv_id.encode(),str(event).encode(),Dn[n].encode(),Cn.encode(),str(tau_n).encode())
+            status = udp_request.send(requset_msg,Station_IP[bs_id])
     
         print("sent request to:",Station_IP[bs_id])
-        msg, addr = udp_request.receive()
+        msg, addr = udp_request.receive("offloading")
         print("get return")
         action = msg[1]
         fs = float(msg[2])
@@ -127,6 +133,7 @@ if __name__ == "__main__":
         all_parameter = [random.randint(1,4),random.randint(1,4),random.randint(1,10),random.randint(1,10),round(7/fs*base_iter)]
         task = cal.options(num_cpus=1, resources={vid[int(action)]: 1}).remote(file[n],all_parameter[0],all_parameter[1],all_parameter[2],all_parameter[3],all_parameter[4])
         result = ray.get(task)
+        del task
         end_time = time.time()
         total_time = end_time-start_time
 
@@ -137,11 +144,11 @@ if __name__ == "__main__":
         # Send complete packet to SAC
         complete_msg = struct.pack('!i10s10s10s10s',4,b'complete',tv_id.encode(),str(total_time).encode(),status.encode())
         udp_request.send(complete_msg,Station_IP[bs_id])
-        if event < 14:
-            event += 1
-        else:
-            event = 1
-            print("Completed all of the events")
-        print("#",n," task is completed by: ",vid)
-        print("Total time: ",total_time)
+        # if event < 14:
+        #     event += 1
+        # else:
+        #     event = 1
+        #     print("Completed all of the events")
+        print("#",n," task is completed by: ",vid[int(action)])
+        print("Total time: ",total_time,"\n")
         time.sleep(1)

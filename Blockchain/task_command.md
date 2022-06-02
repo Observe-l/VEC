@@ -14,5 +14,6 @@ peer chaincode query -C vec-channel -n task -c '{"Args":["bslist"]}'
 
 peer chaincode invoke -o orderer.gcp.com:7050 -C vec-channel -n task --tls --cafile "$ORDERER_CA" -c '{"Args":["delall"]}'
 
+peer lifecycle chaincode queryinstalled
 ```
 
