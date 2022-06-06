@@ -4,23 +4,6 @@ import pymysql
 import random
 import sys
 
-
-# mydb = pymysql.connect(
-#   host="localhost",
-#   user="VEC",
-#   password="666888",
-#   database="SAC"
-# )
-
-# delaycmd = "select offloading_delay from sacenv"
-compcmd = "select computation_size from sacenv"
-
-# delaycmd = "select offloading_delay from" + table + "where timestamp = " + timestamp
-# compcmd = "select computation_size from" + table + "where timestamp = " + timestamp
-
-# tdelay = pd.read_sql(delaycmd, mydb)
-# csize = pd.read_sql(compcmd, mydb)
-
 class SACEnv:
     def __init__(self, s):
         self.s = s
@@ -77,6 +60,26 @@ class SACEnv:
             self.Fs[n] = float(row['Fs']) * (100-float(row['utilization'])) / 100
             n += 1
 
+    def query_reliability(self,id: list, mydb):
+        sql_cmd = "select reliability,completion_ratio from dataupload where id in ("
+        for i in id:
+            sql_cmd = sql_cmd + str(i)
+        sql_cmd = sql_cmd + ")"
+        data=pd.read_sql(sql_cmd,mydb)
+        n = 0
+        for index,row in data.iterrows():
+            self.reliability[n] = float(row['reliability'])
+            n += 1
+
+    def set_reliability(self, mydb):
+        cursor = mydb.cursor()
+        for i in range(self.s):
+            sql_cmd = "UPDATE dataupload SET completion_ratio = %s, reliability = %s WHERE vehicleID = %s"
+            input_data = (self.completion_ratio[i],self.reliability[i], i)
+            cursor.execute(sql_cmd, input_data)
+        mydb.commit()
+
+
     def get_link_dur(self):
         l_dur = [10,10,10,10]
         # return np.random.uniform(2, 5,(self.s,))
@@ -105,9 +108,6 @@ class SACEnv:
         else:
             self.utility[Vs] = np.log(1+difference)
         return
-
-    # def get_vehicle_density(self):
-    #     return np.random.uniform(5, 40)
 
     def get_Utility_task(self,Vs):
         self.Utility_task[Vs] = self.utility[Vs] - self.pn * self.C_size[Vs]
@@ -153,16 +153,7 @@ class SACEnv:
             density = {'1':str(row['BS0_DENSITY']),'2':str(row['BS1_DENSITY'])}
         return density
     
-    def insert_relibility(self, length: int, mydb):
-        cursor = mydb.cursor()
-        sql1 = "UPDATE dataupload SET completion_ratio = %s WHERE vehicleID = %s"
-        sql2 = "UPDATE dataupload SET reliability = %s WHERE vehicleID = %s"
-        for i in range(0,length):
-            input_data1 = (self.completion_ratio[i],i)
-            input_data2 = (self.reliability[i],i)
-            cursor.execute(sql1, input_data1)
-            cursor.execute(sql2, input_data2)
-        mydb.commit()
+
             
 
     def get_reward(self,Vs):

@@ -77,6 +77,9 @@ def get_tau(Dn:float, Cn:float) -> float:
 
 if __name__ == "__main__":
     ray.init(address='auto', _redis_password='5241590000000000')
+
+    # Vehicle number
+    v_num = 12
     # Chose Task randomly. 0.2Mbits ~ 4Mbits
     file = []
     file_list = ["/home/ubuntu/Documents/Taskfile/task_200Kbits.csv","/home/ubuntu/Documents/Taskfile/task_1Mbits.csv",
@@ -84,11 +87,15 @@ if __name__ == "__main__":
                  "/home/ubuntu/Documents/Taskfile/task_4Mbits.csv"]
     for file_name in file_list:
         file.append(ray.data.read_csv(file_name))
-    
+    # Task data size
     Dn = ['0.2','1','2','3','4']
 
     Station_IP = ["192.168.1.117","192.168.1.122"]
-    vid = ["vehicle0","vehicle1","vehicle2","vehicle3"]
+    vid = []
+    for i in range(v_num):
+        iter_id = "vehicle" + str(i)
+        vid.append(iter_id)
+    # vid = ["vehicle0","vehicle1","vehicle2","vehicle3"]
 
     # Rpi 1, ID is 0
     tv_id = '0'
@@ -114,6 +121,7 @@ if __name__ == "__main__":
         print("I am task vehicle, send request to basestation ",bs_id)
         # bs_id = 1
         start_time = time.time()
+        
         '''Send request to SAC until SAC return a "offloading" packet '''
         requset_msg = struct.pack("!i10s10s10s10s10s10s",6,b"request",tv_id.encode(),str(event).encode(),Dn[n].encode(),Cn.encode(),str(tau_n).encode())
         status = udp_request.send(requset_msg,Station_IP[bs_id])

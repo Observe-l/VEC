@@ -14,9 +14,8 @@ from reliability import vehicle
 from Task import Task
 # import A2.util.Taskinteraction
 import os, sys
-# CURRENT_DIR = os.path.dirname(os.path.abspath("/home/vec/Documents/VEC/A2/util/"))
-sys.path.append("/home/vec/Documents/VEC/A2/util/")
-from Taskinteraction import taskInteraction
+# sys.path.append("/home/vec/Documents/VEC/A2/util/")
+# from Taskinteraction import taskInteraction
 
 mydb = pymysql.connect(
   host="localhost",
@@ -24,11 +23,10 @@ mydb = pymysql.connect(
   password="666888",
   database="SAC"
 )
-mycursor = mydb.cursor()
 
 class VECEnv(gym.Env):
     def __init__(self,env_config):
-        self.s = 4
+        self.s = 12
         self.a = 0
 
         self.action_space = gym.spaces.Discrete(self.s)
@@ -51,11 +49,9 @@ class VECEnv(gym.Env):
 
         # iteration
         self.iteration = 0
-        self.udp_status = 0
+        # After pre-training, the real_triaining will be set to True
+        self.real_training = False
         self.train_step = 100
-        self.mean = [0,0,0,0]
-        # TaskSQLUtil.deleteAllTasks()
-        # self.reset()
 
     def reset(self):
         '''
@@ -65,16 +61,16 @@ class VECEnv(gym.Env):
         print("iteration times:",self.iteration)
         '''
         Receive request from Raspberry.#reset = #step + 1
-        Pre-training 200 times
+        Pre-training 6000 times
         '''
         self.cal_e = time()
         if self.iteration > 5999:
-            self.udp_status = 1
-            self.train_step = 0
-            start = time()
+            self.real_training = True
+            # self.train_step = 0
+
+            # Reload the database
             mydb.commit()
-            end = time()
-            print("commit time: ",end-start)
+
             self.msg, self.addr = udp_request.receive("request")
             '''
             Request head should be "request". Otherwise, program will exit and print error head packet.
@@ -89,15 +85,14 @@ class VECEnv(gym.Env):
             self.base_station.D_size = float(self.msg[3]) * np.ones(self.s)
             self.base_station.C_size = float(self.msg[4]) * np.ones(self.s)
             self.base_station.Tn = float(self.msg[5]) * np.ones(self.s)
-            # read reliability from blockchain
-            get_rel = reliability.getAlldata()
-            for i in range(len(get_rel)):
-                self.base_station.reliability[get_rel[i].id] = get_rel[i].re
+
+            # Read reliability from sql database
+            self.base_station.query_reliability(mydb)
             vehicle_ID = self.msg[1]
             event_ID = self.msg[2]
             
         else:
-            vehicle_ID = str(random.randint(0,3))
+            vehicle_ID = str(random.randint(0,11))
             event_ID = "1"
             self.msg = ["request",vehicle_ID, event_ID]
     
@@ -106,8 +101,6 @@ class VECEnv(gym.Env):
     
         self.observation = np.concatenate([self.base_station.Fs,self.base_station.rt,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.Tn])
         self.done = False
-        self.mean = [0,0,0,0]
-        
         self.step_num = 1
 
         return self.observation
@@ -121,7 +114,7 @@ class VECEnv(gym.Env):
         # update the state of chosen base station
         # self.base_station.update_reliability(action[0])
 
-        if self.udp_status == 1:
+        if self.real_training:
             '''
             Real traing. Get task vehicle ID and event ID from UDP message.
             '''
@@ -155,49 +148,81 @@ class VECEnv(gym.Env):
                 self.done =True
                 return self.observation,reward,self.done,{}
 
-            t2 = self.msg[2]
-            tde = self.base_station.get_t_delay(action, t2)
+            # Get task execution time
+            execution_time = self.msg[2]
+            tde = self.base_station.get_t_delay(action, execution_time)
+
+            # Read vehicle density from sql database
             density = self.base_station.get_density(event_ID, mydb)
             if tde > self.base_station.Tn[action]:
                 complete_status = '0'
             else:
                 complete_status = '1'
             
-            bc_ts = taskInteraction()
-            task_id = bc_ts.getNowTimestamp()+'bs'+self.bs_ID
-            com_task = Task(task_id,vehicle_ID,str(action),self.bs_ID,complete_status,density,SAC_time)
+            # Updata data for DDQN part
+            # bc_ts = taskInteraction()
+            # task_id = bc_ts.getNowTimestamp()+'bs'+self.bs_ID
+            # com_task = Task(task_id,vehicle_ID,str(action),self.bs_ID,complete_status,density,SAC_time)
 
-            bc_ts.insert(com_task)
-            # TaskSQLUtil.insert(com_task)
+            # bc_ts.insert(com_task)
         else:
             '''
-            Pre-training 200 times
+            Pre-training 6000 times
             '''
             tde = self.base_station.pre_training(action)
 
             
+        # Calculate the reliability, completion ratio, etc.
         self.base_station.get_utility(action,tde)
         self.base_station.get_Utility_task(action)
         self.base_station.get_normalized_utility(action)
         self.base_station.update_compute_efficiency(action)
         self.base_station.get_reliability(action)
+        # Update the data into sql database, only in real training phase
+        if self.real_training:
+            self.base_station.set_reliability(mydb)
+        print("Task vehicle is:",self.msg[1],", Action is", action)
 
+        # Complete one epoch
         self.step_num+=1
         self.iteration += 1
-        self.mean[action] += 1
         reward=self.base_station.get_reward(action)
         if self.step_num>self.train_step:
             self.done = True
-        self.observation = np.concatenate([self.base_station.Fs,self.base_station.rt,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.Tn])
-        
-        if self.done == True and self.udp_status == 1:
-            reliability.mul_set(self.base_station)
-            # for i in range(self.s):
-            #     sql1 = "UPDATE dataupload SET completion_ratio = %s, reliability = %s WHERE vehicleID = %s"
-            #     input_data1 = (self.base_station.completion_ratio[i],self.base_station.reliability[i], i)
-            #     mycursor.execute(sql1, input_data1)
 
-        print("Task vehicle is:",self.msg[1],", Action is", action, ", max action is: ",self.mean.index(max(self.mean)))
+        '''There are 100 tasks in each epoch. After receive the next request, SAC will get the reward'''
+        if self.done == False:
+            self.real_training = True
+            # self.train_step = 0
+
+            # Reload the database
+            mydb.commit()
+
+            self.msg, self.addr = udp_request.receive("request")
+            '''
+            Request head should be "request". Otherwise, program will exit and print error head packet.
+            '''
+            while self.msg[0] != "request":
+                print("Request error, error head: ",self.msg[0])
+                self.msg, self.addr = udp_request.receive("request")
+            
+            # Time stamp - when receive the udp request
+            self.start_time = time()
+            #Update the state space
+            self.base_station.D_size = float(self.msg[3]) * np.ones(self.s)
+            self.base_station.C_size = float(self.msg[4]) * np.ones(self.s)
+            self.base_station.Tn = float(self.msg[5]) * np.ones(self.s)
+
+            # Read reliability from sql database
+            self.base_station.query_reliability(mydb)
+            vehicle_ID = self.msg[1]
+            event_ID = self.msg[2]
+        self.base_station.get_Fs(mydb)
+        self.base_station.get_rate(vehicle_ID, event_ID, mydb)
+    
+        self.observation = np.concatenate([self.base_station.Fs,self.base_station.rt,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.Tn])
+
+
         return self.observation,reward,self.done,{}
 
 

@@ -1,42 +1,22 @@
+import sqlalchemy
 import pymysql
+import pandas as pd
 import ray
 import os
 import socket
 import struct
 
-from time import time
-def get_ip():
-    try:
-        s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        s.connect(('8.8.8.8',80))
-        ip=s.getsockname()[0]
-    finally:
-        s.close()
-    return ip
+# engin = sqlalchemy.create_engine('mysql+pymysql://lwh:666888@localhost/SAC')
+conn = pymysql.connect(host='localhost',user='lwh',passwd='666888',database='SAC')
 
-# ray.init(address='auto', _redis_password='5241590000000000')
+c = conn.cursor()
+# conn = engin.connect()
 
-# conn = pymysql.connect(host='localhost',user='lwh',passwd='666888',database='Taskoffloading')
-# c = conn.cursor()
-# print ("Open database successful")
+sql_cmd = "select * from vehicle_information"
+a = '1'
 
-# dd = pd.read_sql("SELECT * FROM vehicle",conn,index_col='ID')
-# # print(dd)
-# dd.to_csv('test.csv')
-# conn.close()
-# print ("Close database")
-start_time=time()
-ip = get_ip()
-print(ip)
-print(type(ip))
-sk = socket.socket(type=socket.SOCK_DGRAM)
-stri1 = 'send'
-mesg = struct.pack('!20si20s',stri1.encode(),8000,b'task_file')
-sk.sendto(mesg,("192.168.31.196",4563))
-end_time=time()
-print("Total time: ",end_time-start_time)
-print(start_time)
-print(str(start_time))
-# print(type(start_time))
-
-sk.close()
+while a == '1':
+    data_test = pd.read_sql(sql_cmd,conn)
+    print(data_test)
+    a=input("1: next; other: exit\n")
+    # conn = engin.connect()

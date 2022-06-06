@@ -3,17 +3,17 @@ import pymysql
 import pandas as pd
 import time
 
-conn = pymysql.connect(host='localhost',user='VEC',passwd='666888',database='SAC')
+conn = pymysql.connect(host='localhost',user='lwh',passwd='666888',database='SAC')
 # conn = sqlite3.connect("/home/lwh/nfsroot/Taskoffload.db")
 c = conn.cursor()
 print ("Open database successful")
 
-# c.execute('''CREATE TABLE vehicle_information(
-#           ID VARCHAR(20) PRIMARY KEY NOT NULL,
-#           Fs REAL,
-#           utilization REAL)
-# ''')
-# conn.commit()
+c.execute('''CREATE TABLE vehicle_information(
+          ID VARCHAR(20) PRIMARY KEY NOT NULL,
+          Fs REAL,
+          utilization REAL)
+''')
+conn.commit()
 
 sql = "INSERT INTO vehicle_information (ID, Fs, utilization) VALUES (%s,%s,%s)"
 time_start = time.time()
