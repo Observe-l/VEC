@@ -8,12 +8,12 @@ from Para_def import SACEnv
 from time import time
 import pymysql
 
-import reliability
-from reliability import vehicle
+# import reliability
+# from reliability import vehicle
 # import TaskSQLUtil as TaskSQLUtil
-from Task import Task
+# from Task import Task
 # import A2.util.Taskinteraction
-import os, sys
+# import os, sys
 # sys.path.append("/home/vec/Documents/VEC/A2/util/")
 # from Taskinteraction import taskInteraction
 
@@ -214,8 +214,9 @@ class VECEnv(gym.Env):
             self.base_station.query_reliability(mydb)
             vehicle_ID = self.msg[1]
             event_ID = self.msg[2]
-        self.base_station.get_Fs(mydb)
-        self.base_station.get_rate(vehicle_ID, event_ID, mydb)
+            
+            self.base_station.get_Fs(mydb)
+            self.base_station.get_rate(vehicle_ID, event_ID, mydb)
     
         self.observation = np.concatenate([self.base_station.Fs,self.base_station.rt,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.Tn])
 

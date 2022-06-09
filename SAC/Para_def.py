@@ -38,7 +38,7 @@ class SACEnv:
         self.link_dur = self.get_link_dur()
 
     def get_rate(self,task_ID:str, event_ID:str, mydb):
-        sql_cmd = "select * from throughput WHERE VehicleID = '" + task_ID + "'"
+        sql_cmd = "select * from throughput WHERE VehicleID = 'Vehicle" + task_ID + "'"
         data=pd.read_sql(sql_cmd,mydb)
         for index, row in data.iterrows():
             for n in range(self.s):
