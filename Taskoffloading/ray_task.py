@@ -137,8 +137,13 @@ if __name__ == "__main__":
         print("get return")
         action = msg[1]
         fs = float(msg[2])
-        # All parameter, [cho1,cho2,p1,p2,iter]
-        all_parameter = [random.randint(1,4),random.randint(1,4),random.randint(1,10),random.randint(1,10),round(7/fs*base_iter)]
+        # All parameter, [cho1,cho2,p1,p2,iter], RPi4: 7 GHz. RPi3: 3.58 GHz
+        if int(action) < 7:
+            Max_Fs = 7
+        else:
+            Max_Fs = 3.58
+        all_parameter = [random.randint(1,4),random.randint(1,4),random.randint(1,10),random.randint(1,10),round(Max_Fs/fs*base_iter)]
+
         task = cal.options(num_cpus=1, resources={vid[int(action)]: 1}).remote(file[n],all_parameter[0],all_parameter[1],all_parameter[2],all_parameter[3],all_parameter[4])
         result = ray.get(task)
         del task

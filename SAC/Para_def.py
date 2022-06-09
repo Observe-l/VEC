@@ -38,19 +38,13 @@ class SACEnv:
         self.link_dur = self.get_link_dur()
 
     def get_rate(self,task_ID:str, event_ID:str, mydb):
-        table = "ts_vehicle" + task_ID
-        sql_cmd = "select * from " + table + " WHERE EVENT = " + event_ID
+        sql_cmd = "select * from throughput WHERE VehicleID = '" + task_ID + "'"
         data=pd.read_sql(sql_cmd,mydb)
         for index, row in data.iterrows():
             for n in range(self.s):
-                if n == int(task_ID):
-                    self.rt[n] = 99
-                else:
-                    vehicle = "VEHICLE" + str(n)
-                    self.rt[n] = float(row[vehicle])
+                vehicle = "Vehicle" + str(n)
+                self.rt[n] = float(row[vehicle])
         print("task vehicle is:",task_ID,", event id is:", event_ID,", rate:",self.rt)
-
-        return np.random.uniform(1, 6,(self.s,))
     
     def get_Fs(self, mydb):
         sql_cmd = "select * from vehicle_information"

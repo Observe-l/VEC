@@ -34,15 +34,16 @@ def cal(data: ray.data.Dataset[int],cho1: int, cho2: int, p1: int, p2:int, it_ra
     end=time.time()
     z = p1*z1 + p2*z2
     print("cal time:",end-start)
+    del data
     return z
 
-def local_cal(data: ray.data.Dataset[int],cho1: int, cho2: int, p1: int, p2:int) -> float:
+def local_cal(data: ray.data.Dataset[int],cho1: int, cho2: int, p1: int, p2:int, it_range:int) -> float:
     start=time.time()
     z1=0
     z2=0
     for task in data.iter_batches(batch_format="pandas"):
         num = task.values
-        for ite in range(p1):
+        for ite in range(it_range):
             for i in num:
                 if cho1 == 1:
                     z1 += math.cos(float(i[0]))
@@ -52,8 +53,6 @@ def local_cal(data: ray.data.Dataset[int],cho1: int, cho2: int, p1: int, p2:int)
                     z1 += math.log(float(i[0]))
                 else:
                     z1 += float(i[0]) ** 2
-
-        for ite in range(p2):
             for i in num:
                 if cho2 == 1:
                     z2 += math.cos(float(i[1]))
@@ -111,20 +110,26 @@ if __name__ == "__main__":
 
     for file_name in file_list:
         file.append(ray.data.read_csv(file_name))
-    D_list = [0.2,1,2,3,4]
-    # This should be set at basestation program.
-    fs = random.uniform(3,7)
-    n = random.randint(0,4)
-    base_iter = get_iter(n)
-    Cn = cal_cn(n,base_iter)
-    # All parameter, [cho1,cho2,p1,p2,iter]
-    all_parameter = [random.randint(1,4),random.randint(1,4),random.randint(1,10),random.randint(1,10),round(7/fs*base_iter)]
-    Dn = D_list[n]
-    task = cal.remote(file[n],all_parameter[0],all_parameter[1],all_parameter[2],all_parameter[3],all_parameter[4])
+    # D_list = [0.2,1,2,3,4]
+    # # This should be set at basestation program.
+    # fs = random.uniform(3,7)
+    # n = random.randint(0,4)
+    # base_iter = get_iter(n)
+    # Cn = cal_cn(n,base_iter)
+    # # All parameter, [cho1,cho2,p1,p2,iter]
+    # all_parameter = [random.randint(1,4),random.randint(1,4),random.randint(1,10),random.randint(1,10),round(7/fs*base_iter)]
+    # Dn = D_list[n]
+    n=int(input("Select file:[0]200Kbits; [1]1Mbits; [2]2Mbits; [3]3Mbits; [4]4Mbits\n"))
+    i = 0
+    while i < 10:
+        task = cal.options(resources={"vehicle10": 1}).remote(file[n],1,1,5,6,15)
+        task_result = ray.get(task)
+        del task
+        i += 1
 
     # for i in range(20):
     #     cho1 = random.randint(1,4)
-    #     cho2 = random.randint(1,4)
+    #     cho2 = random.randint(1,4)s
     #     task = cal.remote(file[4],1,cho1,10,cho2,30)
     #     result = ray.get(task)
     #     print(result)
@@ -140,7 +145,7 @@ if __name__ == "__main__":
     # file3 = ray.data.read_csv("/home/lwh/Documents/VEC/Taskoffloading/Taskfile/task_3Mbits.csv")
     # file4 = ray.data.read_csv("/home/lwh/Documents/VEC/Taskoffloading/Taskfile/task_4Mbits.csv")
 
-    size = [0.2,1,2,3,4]
+    # size = [0.2,1,2,3,4]
     
     # # a = input("Select Task:[0:200K, 1:1M, 2:2M, 3:3M, 4:4M]\n")
     # print("start")
