@@ -153,7 +153,7 @@ class VECEnv(gym.Env):
             tde = self.base_station.get_t_delay(action, execution_time)
 
             # Read vehicle density from sql database
-            density = self.base_station.get_density(event_ID, mydb)
+            # density = self.base_station.get_density(event_ID, mydb)
             if tde > self.base_station.Tn[action]:
                 complete_status = '0'
             else:
@@ -191,10 +191,7 @@ class VECEnv(gym.Env):
             self.done = True
 
         '''There are 100 tasks in each epoch. After receive the next request, SAC will get the reward'''
-        if self.done == False:
-            self.real_training = True
-            # self.train_step = 0
-
+        if self.done == False and self.real_training == True:
             # Reload the database
             mydb.commit()
 

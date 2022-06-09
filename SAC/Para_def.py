@@ -60,11 +60,8 @@ class SACEnv:
             self.Fs[n] = float(row['Fs']) * (100-float(row['utilization'])) / 100
             n += 1
 
-    def query_reliability(self,id: list, mydb):
-        sql_cmd = "select reliability,completion_ratio from dataupload where id in ("
-        for i in id:
-            sql_cmd = sql_cmd + str(i)
-        sql_cmd = sql_cmd + ")"
+    def query_reliability(self, mydb):
+        sql_cmd = "select * from dataupload"
         data=pd.read_sql(sql_cmd,mydb)
         n = 0
         for index,row in data.iterrows():
@@ -81,7 +78,7 @@ class SACEnv:
 
 
     def get_link_dur(self):
-        l_dur = [10,10,10,10]
+        l_dur = 10*np.ones(self.s)
         # return np.random.uniform(2, 5,(self.s,))
         return l_dur
 
