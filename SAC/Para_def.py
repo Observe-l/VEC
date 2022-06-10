@@ -67,8 +67,8 @@ class SACEnv:
     def set_reliability(self, mydb):
         cursor = mydb.cursor()
         for i in range(self.s):
-            sql_cmd = "UPDATE dataupload SET completion_ratio = %s, reliability = %s WHERE vehicleID = %s"
-            input_data = (self.completion_ratio[i],self.reliability[i], i)
+            sql_cmd = "UPDATE dataupload SET completion_ratio = %s, reliability = %s, total_task = %s WHERE vehicleID = %s"
+            input_data = (self.completion_ratio[i],self.reliability[i], self.total_received_task,i)
             cursor.execute(sql_cmd, input_data)
         mydb.commit()
 
