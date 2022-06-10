@@ -60,6 +60,8 @@ class SACEnv:
         n = 0
         for index,row in data.iterrows():
             self.reliability[n] = float(row['reliability'])
+            self.total_received_task[n] = float(row['total_task'])
+            self.completion_ratio[n] = float(row['completion_ratio'])
             n += 1
 
     def set_reliability(self, mydb):
