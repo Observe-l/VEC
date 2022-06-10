@@ -68,7 +68,7 @@ class SACEnv:
         cursor = mydb.cursor()
         for i in range(self.s):
             sql_cmd = "UPDATE dataupload SET completion_ratio = %s, reliability = %s, total_task = %s WHERE vehicleID = %s"
-            input_data = (self.completion_ratio[i],self.reliability[i], self.total_received_task,i)
+            input_data = (self.completion_ratio[i],self.reliability[i], self.total_received_task[i],i)
             cursor.execute(sql_cmd, input_data)
         mydb.commit()
 
@@ -150,17 +150,15 @@ class SACEnv:
         return
 
     def get_reliability(self,Vs):
-        self.update_completion_ratio(Vs)
         self.reliability[Vs] = self.omega2 * self.compute_efficiency[Vs] + (1 - self.omega2) * self.completion_ratio[Vs]
-        return
-        # return result
 
-    # def update_reliability(self,Vs):
-    #     self.get_normalized_utility(Vs)
-    #     self.update_compute_efficiency(Vs)
-    #     self.update_completion_ratio(Vs)
-    #     self.reliability[Vs] = self.get_reliability(Vs)
-    #     return
+    def cal_reliability(self,Vs,tde):
+        self.get_utility(Vs,tde)
+        self.get_Utility_task(Vs)
+        self.get_normalized_utility(Vs)
+        self.update_compute_efficiency(Vs)
+        self.update_completion_ratio(Vs)
+        self.get_reliability(Vs)
     
     def get_density(self,event:str, mydb):
         sql_cmd = "select BS0_DENSITY, BS1_DENSITY from ts_vehicle0 where EVENT=" + event

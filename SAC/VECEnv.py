@@ -157,16 +157,15 @@ class VECEnv(gym.Env):
             Pre-training 6000 times
             '''
             tde = self.base_station.pre_training(action)
+            # Calculate the reliability, completion ratio, etc.
+            self.base_station.cal_reliability(action,tde)
 
-            
-        # Calculate the reliability, completion ratio, etc.
-        self.base_station.get_utility(action,tde)
-        self.base_station.get_Utility_task(action)
-        self.base_station.get_normalized_utility(action)
-        self.base_station.update_compute_efficiency(action)
-        self.base_station.get_reliability(action)
         # Update the data into sql database, only in real training phase
         if self.real_training == True:
+            # Sync the vehicle information
+            self.base_station.query_reliability(mydb)
+            # upload reliability into sql database
+            self.base_station.cal_reliability(action,tde)
             self.base_station.set_reliability(mydb)
         print("Task vehicle is:",self.msg[1],", Action is", action)
 
