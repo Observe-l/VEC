@@ -93,7 +93,7 @@ class SACEnv:
         ''' Receive udp packet until head is "request" '''
         udp_msg, udp_addr = udp_request.receive("request")
         while udp_msg[0] != "request":
-            print("Request error, error head: ",self.msg[0])
+            print("Request error, error head: ",udp_msg[0])
             udp_msg, udp_addr = udp_request.receive("request")
 
         ''' update state space '''
