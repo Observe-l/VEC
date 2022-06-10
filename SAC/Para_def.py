@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
+import udp_request
 import pymysql
 import random
-import sys
 
 class SACEnv:
     def __init__(self, s):
@@ -86,6 +86,32 @@ class SACEnv:
         tde = self.D_size[Vs]/self.rt[Vs] + self.C_size[Vs]/self.Fs[Vs]
         self.t_delay[Vs] = tde
         return tde
+    
+    ''' Receive udp request and update the state space '''
+    def receive_request(self, mydb):
+
+        ''' Receive udp packet until head is "request" '''
+        udp_msg, udp_addr = udp_request.receive("request")
+        while udp_msg[0] != "request":
+            print("Request error, error head: ",self.msg[0])
+            udp_msg, udp_addr = udp_request.receive("request")
+
+        ''' update state space '''
+        # Reload data base
+        mydb.commit()
+        self.D_size = float(udp_msg[3]) * np.ones(self.s)
+        self.C_size = float(udp_msg[4]) * np.ones(self.s)
+        self.Tn = float(udp_msg[5]) * np.ones(self.s)
+
+        vehicle_ID = udp_msg[1]
+        event_ID = udp_msg[2]
+        self.get_Fs(mydb)
+        self.get_rate(vehicle_ID,event_ID,mydb)
+        ''' Read reliability from sql database '''
+        
+        self.query_reliability(mydb)
+        return udp_msg, udp_addr
+
 
 
 

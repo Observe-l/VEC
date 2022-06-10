@@ -59,7 +59,8 @@ if __name__ == "__main__":
     loop_count = 1
     throughput_data = pd.read_csv("./throughput.csv",index_col="Time")
     IP_pool = []
-    for i in range(12):
+    # Vehicle 11 can not work
+    for i in range(11):
         add_IP="192.168.1.1"+str(60+i)
         IP_pool.append(add_IP)
     print(IP_pool)

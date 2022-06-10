@@ -67,37 +67,16 @@ class VECEnv(gym.Env):
         if self.iteration > 5999:
             self.real_training = True
             # self.train_step = 0
-
-            # Reload the database
-            mydb.commit()
-
-            self.msg, self.addr = udp_request.receive("request")
-            '''
-            Request head should be "request". Otherwise, program will exit and print error head packet.
-            '''
-            while self.msg[0] != "request":
-                print("Request error, error head: ",self.msg[0])
-                self.msg, self.addr = udp_request.receive("request")
+            self.msg, self.addr = self.base_station.receive_request(mydb)
             
             # Time stamp - when receive the udp request
             self.start_time = time()
-            #Update the state space
-            self.base_station.D_size = float(self.msg[3]) * np.ones(self.s)
-            self.base_station.C_size = float(self.msg[4]) * np.ones(self.s)
-            self.base_station.Tn = float(self.msg[5]) * np.ones(self.s)
-
-            # Read reliability from sql database
-            self.base_station.query_reliability(mydb)
-            vehicle_ID = self.msg[1]
-            event_ID = self.msg[2]
-            
         else:
             vehicle_ID = str(random.randint(0,11))
             event_ID = "1"
             self.msg = ["request",vehicle_ID, event_ID]
-    
-        self.base_station.get_Fs(mydb)
-        self.base_station.get_rate(vehicle_ID, event_ID, mydb)
+            self.base_station.get_Fs(mydb)
+            self.base_station.get_rate(vehicle_ID, event_ID, mydb)
     
         self.observation = np.concatenate([self.base_station.Fs,self.base_station.rt,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.Tn])
         self.done = False
@@ -130,7 +109,11 @@ class VECEnv(gym.Env):
             if status == False:
                 print("Action send error")
                 reward = 0
-                self.done =True
+
+                '''Receive new udp request and update '''
+                self.msg, self.addr = self.base_station.receive_request(mydb)
+                self.observation = np.concatenate([self.base_station.Fs,self.base_station.rt,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.Tn])
+                # self.done =True
                 return self.observation,reward,self.done,{}
 
             # Vehicle will return a "complete" packet, or back to reset function
@@ -145,7 +128,11 @@ class VECEnv(gym.Env):
             if self.msg[0] != "complete":
                 print("Complete packet error, error head: ",self.msg[0])
                 reward = 0
-                self.done =True
+
+                '''Receive new udp request and update '''
+                self.msg, self.addr = self.base_station.receive_request(mydb)
+                self.observation = np.concatenate([self.base_station.Fs,self.base_station.rt,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.Tn])
+                # self.done =True
                 return self.observation,reward,self.done,{}
 
             # Get task execution time
@@ -192,31 +179,10 @@ class VECEnv(gym.Env):
 
         '''There are 100 tasks in each epoch. After receive the next request, SAC will get the reward'''
         if self.done == False and self.real_training == True:
-            # Reload the database
-            mydb.commit()
 
-            self.msg, self.addr = udp_request.receive("request")
-            '''
-            Request head should be "request". Otherwise, program will exit and print error head packet.
-            '''
-            while self.msg[0] != "request":
-                print("Request error, error head: ",self.msg[0])
-                self.msg, self.addr = udp_request.receive("request")
-            
+            self.msg, self.addr = self.base_station.receive_request(mydb)
             # Time stamp - when receive the udp request
             self.start_time = time()
-            #Update the state space
-            self.base_station.D_size = float(self.msg[3]) * np.ones(self.s)
-            self.base_station.C_size = float(self.msg[4]) * np.ones(self.s)
-            self.base_station.Tn = float(self.msg[5]) * np.ones(self.s)
-
-            # Read reliability from sql database
-            self.base_station.query_reliability(mydb)
-            vehicle_ID = self.msg[1]
-            event_ID = self.msg[2]
-            
-            self.base_station.get_Fs(mydb)
-            self.base_station.get_rate(vehicle_ID, event_ID, mydb)
     
         self.observation = np.concatenate([self.base_station.Fs,self.base_station.rt,self.base_station.link_dur,self.base_station.reliability,self.base_station.C_size,self.base_station.D_size,self.base_station.Tn])
 

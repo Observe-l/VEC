@@ -19,6 +19,6 @@ if __name__ == '__main__':
             'framework':'torch'
         },
         stop={
-            'episodes_total':5000
+            'episodes_total':150
         }
     )

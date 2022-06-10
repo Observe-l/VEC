@@ -24,7 +24,7 @@ $ ssh vec@172.27.84.136
 $ ssh vec@172.27.104.197
 
 # mount nfs folder
-$ sudo mount -t nfs 172.27.94.31:/home/vec/nfsroot ~/nfsroot -o nolock,soft,timeo=30,retry=3
+$ sudo mount -t nfs 192.168.1.118:/home/lwh/nfsroot ~/nfsroot -o nolock,soft,timeo=30,retry=3
 ```
 
 ### Git command

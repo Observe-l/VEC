@@ -120,8 +120,6 @@ if __name__ == "__main__":
         bs_id = int(msg[1])
         print("I am task vehicle, send request to basestation ",bs_id)
         # bs_id = 1
-        start_time = time.time()
-        
         '''Send request to SAC until SAC return a "offloading" packet '''
         requset_msg = struct.pack("!i10s10s10s10s10s10s",6,b"request",tv_id.encode(),str(event).encode(),Dn[n].encode(),Cn.encode(),str(tau_n).encode())
         status = udp_request.send(requset_msg,Station_IP[bs_id])
@@ -134,6 +132,7 @@ if __name__ == "__main__":
     
         print("sent request to:",Station_IP[bs_id])
         msg, addr = udp_request.receive("offloading")
+        start_time = time.time()
         print("get return")
         action = msg[1]
         fs = float(msg[2])
