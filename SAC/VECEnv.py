@@ -18,7 +18,7 @@ import pymysql
 # from Taskinteraction import taskInteraction
 
 mydb = pymysql.connect(
-  host="localhost",
+  host="192.168.1.117",
   user="VEC",
   password="666888",
   database="SAC"
@@ -166,7 +166,7 @@ class VECEnv(gym.Env):
         self.base_station.update_compute_efficiency(action)
         self.base_station.get_reliability(action)
         # Update the data into sql database, only in real training phase
-        if self.real_training:
+        if self.real_training == True:
             self.base_station.set_reliability(mydb)
         print("Task vehicle is:",self.msg[1],", Action is", action)
 

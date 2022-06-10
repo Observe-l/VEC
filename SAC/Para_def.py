@@ -141,10 +141,6 @@ class SACEnv:
         self.compute_efficiency[Vs] = (1-self.omega1)*self.compute_efficiency[Vs]+self.omega1*self.normalized_utility[Vs]
         return
 
-    def update_total_received(self,Vs):
-        self.total_received_task[Vs]+=1
-        return
-
     def update_completion_ratio(self,Vs):
         one = 1 if self.t_delay[Vs]<self.Tn[Vs] else 0
         self.total_received_task[Vs] += 1
@@ -152,6 +148,7 @@ class SACEnv:
         return
 
     def get_reliability(self,Vs):
+        self.update_completion_ratio(Vs)
         self.reliability[Vs] = self.omega2 * self.compute_efficiency[Vs] + (1 - self.omega2) * self.completion_ratio[Vs]
         return
         # return result

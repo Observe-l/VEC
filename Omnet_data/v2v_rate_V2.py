@@ -118,7 +118,7 @@ if __name__ == "__main__":
         
         if loop_count  > 4:
             bs_id= "1"
-            db = db1
+            db = db0
         else:
             bs_id= "0"
             db = db0
