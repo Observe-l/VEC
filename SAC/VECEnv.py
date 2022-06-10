@@ -163,6 +163,7 @@ class VECEnv(gym.Env):
         # Update the data into sql database, only in real training phase
         if self.real_training == True:
             # Sync the vehicle information
+            mydb.commit()
             self.base_station.query_reliability(mydb)
             # upload reliability into sql database
             self.base_station.cal_reliability(action,tde)
